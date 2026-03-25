@@ -20,6 +20,8 @@ import {
   Star
 } from 'lucide-react';
 import useImage from 'use-image';
+import { motion, AnimatePresence } from 'motion/react';
+import { validateWhiteboardText, formatInput } from '../lib/validation';
 
 interface Shape {
   id: string;
@@ -97,6 +99,9 @@ export const SmartWhiteboard: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showGrid, setShowGrid] = useState(true);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [textInput, setTextInput] = useState<{ x: number, y: number } | null>(null);
+  const [pendingText, setPendingText] = useState('');
+  const [textError, setTextError] = useState<string | null>(null);
   
   const stageRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -167,19 +172,35 @@ export const SmartWhiteboard: React.FC = () => {
         strokeWidth: strokeWidth,
       }]);
     } else if (tool === 'text') {
-      const text = prompt('Enter your text:');
-      if (text) {
-        setShapes([...shapes, {
-          id,
-          type: 'text',
-          x: pos.x,
-          y: pos.y,
-          text,
-          fill: color,
-        }]);
-      }
+      setTextInput({ x: pos.x, y: pos.y });
+      setPendingText('');
+      setTextError(null);
       isDrawing.current = false;
     }
+  };
+
+  const handleAddText = () => {
+    if (!textInput) return;
+    const formatted = formatInput(pendingText);
+    const validation = validateWhiteboardText(formatted);
+    
+    if (!validation.isValid) {
+      setTextError(validation.error || 'Invalid text');
+      return;
+    }
+
+    const id = Date.now().toString();
+    setHistory([...history, shapes]);
+    setRedoStack([]);
+    setShapes([...shapes, {
+      id,
+      type: 'text',
+      x: textInput.x,
+      y: textInput.y,
+      text: formatted,
+      fill: color,
+    }]);
+    setTextInput(null);
   };
 
   const handleMouseMove = (e: any) => {
@@ -460,6 +481,49 @@ export const SmartWhiteboard: React.FC = () => {
         </div>
         <p className="text-slate-400 text-[10px] font-mono">Use stickers to build your STEM diagrams!</p>
       </div>
+
+      {/* Text Input Modal */}
+      <AnimatePresence>
+        {textInput && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white p-8 rounded-[2rem] shadow-2xl border border-slate-100 w-full max-w-sm"
+            >
+              <h3 className="text-xl font-black italic text-primary mb-4 uppercase tracking-tighter">Add Text</h3>
+              <input
+                autoFocus
+                type="text"
+                value={pendingText}
+                onChange={(e) => {
+                  setPendingText(e.target.value);
+                  setTextError(null);
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddText()}
+                placeholder="Type something amazing..."
+                className={`w-full p-4 bg-slate-50 border-2 rounded-2xl font-bold outline-none transition-all ${textError ? 'border-red-500' : 'border-slate-100 focus:border-primary'}`}
+              />
+              {textError && <p className="text-red-500 text-xs font-bold mt-2 ml-2">{textError}</p>}
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setTextInput(null)}
+                  className="flex-1 py-3 bg-slate-100 text-slate-500 font-black rounded-xl hover:bg-slate-200 transition-all uppercase text-xs tracking-widest"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddText}
+                  className="flex-1 py-3 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-all uppercase text-xs tracking-widest"
+                >
+                  Add
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

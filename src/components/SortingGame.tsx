@@ -72,7 +72,7 @@ export const SortingGame: React.FC<SortingGameProps> = ({ levelId, levelTitle, o
         </button>
 
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{levelTitle.toUpperCase()}</h2>
+          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{(levelTitle || '').toUpperCase()}</h2>
           <p className="text-gray-500 font-bold mt-1">Sort the items!</p>
         </div>
 
@@ -104,7 +104,7 @@ export const SortingGame: React.FC<SortingGameProps> = ({ levelId, levelTitle, o
                 onClick={() => handleSort(cat)}
                 className="p-6 bg-surface hover:bg-primary/5 border border-primary/10 rounded-2xl font-black text-lg transition-all hover:scale-105 active:scale-95 text-text-main"
               >
-                {cat.toUpperCase()}
+                {(cat || '').toUpperCase()}
               </button>
             ))}
           </div>

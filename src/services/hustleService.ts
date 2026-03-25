@@ -3,8 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+export type UserRole = 'student' | 'teacher' | 'admin';
+
 export interface StudentProfile {
   name: string;
+  role: UserRole;
   classLevel: number;
   totalXp: number;
   points: number;
@@ -12,6 +15,7 @@ export interface StudentProfile {
   unlockedLevels: number[];
   unlockedSkins: string[];
   activeSkin: string;
+  schoolId: string;
   mazeAttempts: Record<number, number>; // levelId: attempts
   levelMoves: Record<number, any[][]>; // levelId: array of attempts, each attempt is an array of moves
   badges: string[];
@@ -74,12 +78,14 @@ const saveProfiles = (profiles: Record<string, StudentProfile>) => {
 };
 
 export const hustleService = {
-  login: (name: string): StudentProfile => {
+  login: (name: string, role: UserRole = 'student', schoolId: string = 'default'): StudentProfile => {
     const profiles = getProfiles();
     if (!profiles[name]) {
       // Create new profile if it doesn't exist
       const defaultProfile: StudentProfile = {
         name,
+        role,
+        schoolId,
         classLevel: 1,
         totalXp: 0,
         points: 500,
@@ -99,6 +105,18 @@ export const hustleService = {
       };
       profiles[name] = defaultProfile;
       saveProfiles(profiles);
+    } else {
+      // Update role and schoolId if they changed or were missing
+      let changed = false;
+      if (!profiles[name].role || profiles[name].role !== role) {
+        profiles[name].role = role;
+        changed = true;
+      }
+      if (!profiles[name].schoolId || (schoolId !== 'default' && profiles[name].schoolId !== schoolId)) {
+        profiles[name].schoolId = schoolId;
+        changed = true;
+      }
+      if (changed) saveProfiles(profiles);
     }
     
     activeUserName = name;
@@ -132,6 +150,11 @@ export const hustleService = {
 
   getUserCount: () => {
     return Object.keys(getProfiles()).length;
+  },
+
+  getSchoolUsers: (schoolId: string): StudentProfile[] => {
+    const profiles = getProfiles();
+    return Object.values(profiles).filter(p => p.schoolId === schoolId);
   },
 
   updateStickers: (stickers: StudentProfile['stickers']) => {

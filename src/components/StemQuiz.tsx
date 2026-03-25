@@ -80,7 +80,7 @@ export const StemQuiz: React.FC<StemQuizProps> = ({ levelId, levelTitle, onClose
         </button>
 
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{levelTitle.toUpperCase()}</h2>
+          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{(levelTitle || '').toUpperCase()}</h2>
           {gameState === 'playing' && <p className="text-gray-500 font-bold text-xs uppercase tracking-widest mt-2">Question {currentQ + 1} of {questions.length}</p>}
         </div>
 

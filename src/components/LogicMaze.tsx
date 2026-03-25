@@ -156,7 +156,7 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
         {/* Game Area */}
         <div className="flex-1 p-8 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-primary/5">
           <div className="mb-6 text-center">
-            <h2 className="text-2xl font-black italic text-primary tracking-tighter">{levelTitle.toUpperCase()}</h2>
+            <h2 className="text-2xl font-black italic text-primary tracking-tighter">{(levelTitle || '').toUpperCase()}</h2>
             <p className={`font-bold mt-1 transition-colors ${gameState === 'won' ? 'text-primary' : gameState === 'lost' ? 'text-red-500' : 'text-gray-500'}`}>
               {message}
             </p>

@@ -45,7 +45,10 @@ import {
   Palette,
   Sparkles,
   BookOpen,
-  LogOut
+  LogOut,
+  Users,
+  Settings,
+  ShieldCheck
 } from 'lucide-react';
 import { Auth } from './components/Auth';
 import { HustleBotLab } from './components/HustleBotLab';
@@ -214,16 +217,18 @@ export default function App() {
   };
 
   const navItems = [
-    { name: 'Mission Map', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { name: 'Smart Whiteboard', icon: <Palette className="w-5 h-5" /> },
-    { name: 'Bot Lab', icon: <Cpu className="w-5 h-5" /> },
-    { name: 'Achievements', icon: <Award className="w-5 h-5" /> },
-    { name: 'STEAM Sandbox', icon: <Sparkles className="w-5 h-5" /> },
-    { name: 'Sticker Book', icon: <BookOpen className="w-5 h-5" /> },
-    { name: 'Hustle Shop', icon: <ShoppingBag className="w-5 h-5" /> },
-    { name: 'Science Lab', icon: <Beaker className="w-5 h-5" /> },
-    { name: 'Parent Report', icon: <TrendingUp className="w-5 h-5" /> },
-  ];
+    { name: 'Mission Map', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'Smart Whiteboard', icon: <Palette className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'Bot Lab', icon: <Cpu className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'Achievements', icon: <Award className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'STEAM Sandbox', icon: <Sparkles className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'Sticker Book', icon: <BookOpen className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'Hustle Shop', icon: <ShoppingBag className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'Science Lab', icon: <Beaker className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'Parent Report', icon: <TrendingUp className="w-5 h-5" />, roles: ['student'] },
+    { name: 'Teacher Dashboard', icon: <Users className="w-5 h-5" />, roles: ['teacher', 'admin'] },
+    { name: 'Admin Panel', icon: <ShieldCheck className="w-5 h-5" />, roles: ['admin'] },
+  ].filter(item => item.roles.includes(profile?.role || 'student'));
 
   if (!profile) {
     return <Auth onLogin={handleLogin} />;
@@ -554,10 +559,16 @@ export default function App() {
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter">MISSION MAP</h2>
-                    <p className="text-gray-400 mt-1">Class {selectedClass} • {selectedClass === 1 ? 'Animals' : selectedClass === 5 ? 'Space' : 'Science'} Explorer</p>
+                    <p className="text-gray-400 mt-1">
+                      {profile.role === 'student' 
+                        ? `Class ${selectedClass} • ${selectedClass === 1 ? 'Animals' : selectedClass === 5 ? 'Space' : 'Science'} Explorer`
+                        : `${(profile.role || 'student').toUpperCase()} VIEW • Class ${selectedClass} Content`}
+                    </p>
                   </div>
-                  <div className="hidden sm:block px-4 py-2 bg-primary/5 rounded-xl border border-primary/10 text-xs font-bold text-gray-500">
-                    {profile.completedLevels.length} / 50 LEVELS DONE
+                  <div className="hidden sm:block px-4 py-2 bg-primary/5 rounded-xl border border-primary/10 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                    {profile.role === 'student' 
+                      ? `${profile.completedLevels.length} / 50 LEVELS DONE`
+                      : 'ALL MISSIONS UNLOCKED FOR REVIEW'}
                   </div>
                 </div>
 
@@ -573,7 +584,7 @@ export default function App() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         onClick={() => {
-                          if (isUnlocked) {
+                          if (isUnlocked || profile.role !== 'student') {
                             setSelectedMission(mission);
                           } else {
                             handleUnlockLevel(mission.id, mission.cost);
@@ -581,7 +592,7 @@ export default function App() {
                         }}
                         className={`group relative bg-surface rounded-3xl p-8 border transition-all duration-500 cursor-pointer overflow-hidden ${
                           isCompleted ? 'border-primary/40 bg-primary/5' : 
-                          !isUnlocked ? 'border-primary/5 opacity-80 grayscale hover:grayscale-0' :
+                          (!isUnlocked && profile.role === 'student') ? 'border-primary/5 opacity-80 grayscale hover:grayscale-0' :
                           'border-primary/10 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10'
                         }`}
                       >
@@ -591,14 +602,14 @@ export default function App() {
                         
                         <div className={`w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform duration-500 border border-primary/5 ${
                           isCompleted ? 'border-primary/30 shadow-[0_0_15px_rgba(14,165,233,0.2)]' : 
-                          !isUnlocked ? 'text-gray-400' : ''
+                          (!isUnlocked && profile.role === 'student') ? 'text-gray-400' : ''
                         }`}>
-                          {isUnlocked ? mission.icon : <Lock className="w-8 h-8" />}
+                          {(isUnlocked || profile.role !== 'student') ? mission.icon : <Lock className="w-8 h-8" />}
                         </div>
                         
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className={`text-xl font-black transition-colors ${!isUnlocked ? 'text-gray-400' : 'group-hover:text-primary'}`}>
-                            {isUnlocked ? mission.title : 'LOCKED MISSION'}
+                          <h3 className={`text-xl font-black transition-colors ${(!isUnlocked && profile.role === 'student') ? 'text-gray-400' : 'group-hover:text-primary'}`}>
+                            {(isUnlocked || profile.role !== 'student') ? mission.title : 'LOCKED MISSION'}
                           </h3>
                           {isCompleted && (
                             <div className="bg-primary/20 p-1 rounded-full">
@@ -609,17 +620,21 @@ export default function App() {
                         
                         <div className="flex items-center gap-2 text-gray-500 text-sm font-bold">
                           <Coins className="w-4 h-4 text-primary/70" />
-                          <span>{isUnlocked ? `${mission.xp} XP REWARD` : `${mission.cost} PTS TO UNLOCK`}</span>
+                          <span>
+                            {profile.role !== 'student' 
+                              ? 'PREVIEW MODE' 
+                              : isUnlocked ? `${mission.xp} XP REWARD` : `${mission.cost} PTS TO UNLOCK`}
+                          </span>
                         </div>
 
                         <div className="mt-8 flex items-center justify-between">
                           <span className="text-xs font-black text-primary tracking-widest uppercase">
-                            {isCompleted ? 'Replay Mission' : isUnlocked ? 'Start Mission' : 'Unlock Now'}
+                            {isCompleted ? 'Replay Mission' : (isUnlocked || profile.role !== 'student') ? 'Start Mission' : 'Unlock Now'}
                           </span>
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center group-hover:translate-x-2 transition-transform ${
-                            isUnlocked ? 'bg-primary text-white' : 'bg-primary/5 text-gray-400'
+                            (isUnlocked || profile.role !== 'student') ? 'bg-primary text-white' : 'bg-primary/5 text-gray-400'
                           }`}>
-                            {isUnlocked ? <ChevronRight className="w-5 h-5" /> : <Unlock className="w-4 h-4" />}
+                            {(isUnlocked || profile.role !== 'student') ? <ChevronRight className="w-5 h-5" /> : <Unlock className="w-4 h-4" />}
                           </div>
                         </div>
 
@@ -768,7 +783,7 @@ export default function App() {
                             <div className="flex flex-wrap gap-1">
                               {moves.map((move: any, i: number) => (
                                 <div key={i} className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-[10px] font-mono text-gray-500">
-                                  {typeof move === 'string' ? move[0].toUpperCase() : i + 1}
+                                  {typeof move === 'string' && move.length > 0 ? move[0].toUpperCase() : i + 1}
                                 </div>
                               ))}
                             </div>
@@ -777,6 +792,115 @@ export default function App() {
                       })
                     )}
                   </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {activeTab === 'Teacher Dashboard' && (
+            <section>
+              <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter mb-8 uppercase">School: {profile.schoolId}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div className="bg-surface p-8 rounded-3xl border border-primary/10 shadow-xl shadow-primary/5">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                      <Users className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-gray-400 uppercase tracking-widest">School Students</p>
+                      <h3 className="text-2xl font-black">{hustleService.getSchoolUsers(profile.schoolId).filter(u => u.role === 'student').length}</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-surface p-8 rounded-3xl border border-primary/10 shadow-xl shadow-primary/5">
+                <h3 className="text-xl font-black mb-6">Student Roster</h3>
+                <div className="space-y-4">
+                  {hustleService.getSchoolUsers(profile.schoolId).filter(u => u.role === 'student').map(student => (
+                    <div key={student.name} className="flex items-center justify-between p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm">
+                          <User className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="font-black text-sm">{student.name}</p>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Class {student.classLevel} • {student.totalXp} XP</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-black text-primary">{student.points} PTS</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{student.completedLevels.length} Missions</p>
+                      </div>
+                    </div>
+                  ))}
+                  {hustleService.getSchoolUsers(profile.schoolId).filter(u => u.role === 'student').length === 0 && (
+                    <p className="text-gray-500 font-bold italic text-center py-10">No students registered in this school yet.</p>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {activeTab === 'Admin Panel' && (
+            <section>
+              <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter mb-8 uppercase">Admin: {profile.schoolId}</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="bg-surface p-8 rounded-3xl border border-primary/10 shadow-xl shadow-primary/5">
+                  <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+                    <Users className="w-6 h-6 text-primary" />
+                    School Staff & Students
+                  </h3>
+                  <div className="space-y-4">
+                    {hustleService.getSchoolUsers(profile.schoolId).map(user => (
+                      <div key={user.name} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
+                            user.role === 'admin' ? 'bg-red-100 text-red-500' : 
+                            user.role === 'teacher' ? 'bg-amber-100 text-amber-500' : 
+                            'bg-primary/10 text-primary'
+                          }`}>
+                            {user.role === 'admin' ? <ShieldCheck className="w-5 h-5" /> : 
+                             user.role === 'teacher' ? <Users className="w-5 h-5" /> : 
+                             <User className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <p className="font-black text-sm">{user.name}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{user.role}</p>
+                          </div>
+                        </div>
+                        <div className="px-3 py-1 bg-white rounded-lg border border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          {user.schoolId}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-surface p-8 rounded-3xl border border-red-100 shadow-xl shadow-red-500/5">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-500">
+                      <ShieldCheck className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black">School Controls</h3>
+                      <p className="text-sm text-gray-400 font-bold">Manage {profile.schoolId} settings.</p>
+                    </div>
+                  </div>
+                  <div className="p-6 bg-red-50 rounded-2xl border border-red-100 mb-6">
+                    <p className="text-red-600 text-sm font-bold">Danger Zone: These actions are permanent.</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      // In a real app, this would only clear school data
+                      localStorage.clear();
+                      window.location.reload();
+                    }}
+                    className="w-full px-6 py-4 bg-red-500 text-white font-black rounded-2xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 uppercase tracking-widest text-xs"
+                  >
+                    Reset School Data
+                  </button>
                 </div>
               </div>
             </section>

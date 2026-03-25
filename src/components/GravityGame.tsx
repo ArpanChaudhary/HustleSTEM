@@ -61,7 +61,7 @@ export const GravityGame: React.FC<GravityGameProps> = ({ levelId, levelTitle, o
         </button>
 
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{levelTitle.toUpperCase()}</h2>
+          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{(levelTitle || '').toUpperCase()}</h2>
           <p className="text-gray-500 font-bold mt-1">Jump to the planet with gravity: <span className="text-text-main">{data.planets[currentIndex].gravity} m/s²</span></p>
         </div>
 
@@ -77,7 +77,7 @@ export const GravityGame: React.FC<GravityGameProps> = ({ levelId, levelTitle, o
                 onClick={() => handleJump(planet.name)}
                 className="p-6 bg-primary/5 hover:bg-primary/10 border border-primary/10 rounded-2xl font-black text-lg transition-all hover:scale-105 active:scale-95 text-text-main"
               >
-                {planet.name.toUpperCase()}
+                {(planet.name || '').toUpperCase()}
               </button>
             ))}
           </div>

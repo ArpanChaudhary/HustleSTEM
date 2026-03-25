@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, ChevronRight, Sparkles, Users } from 'lucide-react';
-import { hustleService } from '../services/hustleService';
+import { hustleService, UserRole } from '../services/hustleService';
+
+import { validateName, formatInput } from '../lib/validation';
 
 interface AuthProps {
   onLogin: (profile: any) => void;
@@ -10,6 +12,8 @@ interface AuthProps {
 export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
+  const [schoolId, setSchoolId] = useState('');
+  const [role, setRole] = useState<UserRole>('student');
   const [classLevel, setClassLevel] = useState(1);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,15 +22,26 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    const formattedName = formatInput(name);
+    const validation = validateName(formattedName);
+
+    if (!validation.isValid) {
+      setError(validation.error || 'Invalid name');
+      return;
+    }
+
     setLoading(true);
 
     try {
       // Simulate a small delay for kid-friendly feedback
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      const profile = hustleService.login(name);
+      const profile = hustleService.login(formattedName, role, schoolId || 'default');
       if (!isLogin) {
         profile.classLevel = classLevel;
+        profile.role = role;
+        profile.schoolId = schoolId || 'default';
         hustleService.saveProfile(profile);
       }
       onLogin(profile);
@@ -109,17 +124,47 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   className="space-y-6 overflow-hidden"
                 >
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Class Level</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">School Name / ID</label>
+                    <div className="relative">
+                      <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                      <input
+                        type="text"
+                        required
+                        value={schoolId}
+                        onChange={(e) => setSchoolId(e.target.value)}
+                        placeholder="e.g. XYZ School"
+                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Role</label>
                     <select
-                      value={classLevel}
-                      onChange={(e) => setClassLevel(parseInt(e.target.value))}
+                      value={role}
+                      onChange={(e) => setRole(e.target.value as UserRole)}
                       className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold appearance-none"
                     >
-                      {[1, 2, 3, 4, 5].map(lvl => (
-                        <option key={lvl} value={lvl}>Class {lvl}</option>
-                      ))}
+                      <option value="student">Student</option>
+                      <option value="teacher">Teacher</option>
+                      <option value="admin">Admin</option>
                     </select>
                   </div>
+
+                  {role === 'student' && (
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Class Level</label>
+                      <select
+                        value={classLevel}
+                        onChange={(e) => setClassLevel(parseInt(e.target.value))}
+                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold appearance-none"
+                      >
+                        {[1, 2, 3, 4, 5].map(lvl => (
+                          <option key={lvl} value={lvl}>Class {lvl}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, CheckCircle2, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { hustleService } from '../services/hustleService';
+import { validateMathInput, cleanNumericInput } from '../lib/validation';
 
 interface MathGameProps {
   levelId: number;
@@ -35,10 +36,18 @@ export const MathGame: React.FC<MathGameProps> = ({ levelId, levelTitle, onClose
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
   const [userInput, setUserInput] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (gameState === 'won' || !userInput) return;
+
+    const validation = validateMathInput(userInput);
+    if (!validation.isValid) {
+      setError(validation.error || 'Invalid input');
+      return;
+    }
+    setError(null);
 
     const currentProblem = data.problems[currentIndex];
     const isCorrect = parseInt(userInput) === currentProblem.a;
@@ -73,7 +82,7 @@ export const MathGame: React.FC<MathGameProps> = ({ levelId, levelTitle, onClose
         </button>
 
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{levelTitle.toUpperCase()}</h2>
+          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{(levelTitle || '').toUpperCase()}</h2>
           <p className="text-gray-500 font-bold mt-1">Solve the problems!</p>
         </div>
 
@@ -101,12 +110,19 @@ export const MathGame: React.FC<MathGameProps> = ({ levelId, levelTitle, onClose
             <form onSubmit={handleSubmit} className="w-full max-w-xs">
               <input
                 autoFocus
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                className="w-full p-6 bg-primary/5 border-2 border-primary/10 rounded-2xl text-center text-4xl font-black text-primary focus:border-primary outline-none transition-all"
+                onChange={(e) => {
+                  const val = cleanNumericInput(e.target.value);
+                  setUserInput(val);
+                  setError(null);
+                }}
+                className={`w-full p-6 bg-primary/5 border-2 rounded-2xl text-center text-4xl font-black text-primary outline-none transition-all ${error ? 'border-red-500' : 'border-primary/10 focus:border-primary'}`}
                 placeholder="?"
               />
+              {error && <p className="text-red-500 text-xs font-bold mt-2 text-center">{error}</p>}
               <button
                 type="submit"
                 className="w-full mt-4 p-4 bg-primary text-white font-black rounded-2xl shadow-[0_0_20px_rgba(14,165,233,0.3)] hover:scale-105 transition-all"

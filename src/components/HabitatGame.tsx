@@ -62,7 +62,7 @@ export const HabitatGame: React.FC<HabitatGameProps> = ({ levelId, levelTitle, o
         </button>
 
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{levelTitle.toUpperCase()}</h2>
+          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{(levelTitle || '').toUpperCase()}</h2>
           <p className="text-gray-500 font-bold mt-1">Match the animal to its home!</p>
         </div>
 
@@ -93,7 +93,7 @@ export const HabitatGame: React.FC<HabitatGameProps> = ({ levelId, levelTitle, o
                 onClick={() => handleHabitatClick(habitat)}
                 className="p-6 bg-primary/5 hover:bg-primary/10 border border-primary/10 rounded-2xl font-black text-lg transition-all hover:scale-105 active:scale-95 text-text-main"
               >
-                {habitat.toUpperCase()}
+                {(habitat || '').toUpperCase()}
               </button>
             ))}
           </div>

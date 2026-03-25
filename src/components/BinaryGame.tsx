@@ -51,7 +51,7 @@ export const BinaryGame: React.FC<BinaryGameProps> = ({ levelId, levelTitle, onC
         </button>
 
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{levelTitle.toUpperCase()}</h2>
+          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{(levelTitle || '').toUpperCase()}</h2>
           <p className="text-gray-500 font-bold mt-1">Flip the bits to match the target!</p>
           <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-2 italic">Hint: {data.hint}</p>
         </div>

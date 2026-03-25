@@ -84,7 +84,7 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({ levelId, levelTitle, onC
         </button>
 
         <div className="text-center mb-10">
-          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{levelTitle.toUpperCase()}</h2>
+          <h2 className="text-2xl font-black italic text-primary tracking-tighter">{(levelTitle || '').toUpperCase()}</h2>
           <p className="text-gray-500 font-bold mt-1">Match the pairs!</p>
         </div>
 
