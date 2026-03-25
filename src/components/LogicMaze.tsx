@@ -292,7 +292,7 @@ const CommandButton = ({ icon, label, onClick }: { icon: React.ReactNode, label:
     className="flex flex-col items-center justify-center gap-2 p-4 bg-surface border border-primary/10 rounded-2xl hover:border-primary/50 hover:bg-primary/5 transition-all group active:scale-95"
   >
     <div className="text-gray-400 group-hover:text-primary transition-colors">
-      {React.cloneElement(icon as React.ReactElement, { className: 'w-6 h-6' })}
+      {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { size: 24 }) : icon}
     </div>
     <span className="text-[10px] font-black uppercase tracking-tighter text-gray-500 group-hover:text-primary">{label}</span>
   </button>

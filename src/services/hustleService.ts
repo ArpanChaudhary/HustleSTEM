@@ -31,16 +31,46 @@ export interface StudentProfile {
 const STORAGE_KEY = 'hustle_stem_profiles';
 const ACTIVE_USER_KEY = 'hustle_stem_active_user';
 
+const safeStorage = {
+  getItem: (key: string) => {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn('localStorage access denied:', e);
+      return null;
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn('localStorage access denied:', e);
+    }
+  },
+  removeItem: (key: string) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.warn('localStorage access denied:', e);
+    }
+  }
+};
+
 let cachedProfile: StudentProfile | null = null;
-let activeUserName: string | null = localStorage.getItem(ACTIVE_USER_KEY);
+let activeUserName: string | null = safeStorage.getItem(ACTIVE_USER_KEY);
 
 const getProfiles = (): Record<string, StudentProfile> => {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : {};
+  const data = safeStorage.getItem(STORAGE_KEY);
+  try {
+    return data ? JSON.parse(data) : {};
+  } catch (e) {
+    console.error('Failed to parse profiles:', e);
+    return {};
+  }
 };
 
 const saveProfiles = (profiles: Record<string, StudentProfile>) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+  safeStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
 };
 
 export const hustleService = {
@@ -72,7 +102,7 @@ export const hustleService = {
     }
     
     activeUserName = name;
-    localStorage.setItem(ACTIVE_USER_KEY, name);
+    safeStorage.setItem(ACTIVE_USER_KEY, name);
     cachedProfile = profiles[name];
     return cachedProfile;
   },
@@ -80,7 +110,7 @@ export const hustleService = {
   logout: () => {
     activeUserName = null;
     cachedProfile = null;
-    localStorage.removeItem(ACTIVE_USER_KEY);
+    safeStorage.removeItem(ACTIVE_USER_KEY);
   },
 
   getProfile: async (): Promise<StudentProfile | null> => {

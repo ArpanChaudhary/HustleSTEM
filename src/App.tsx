@@ -43,12 +43,14 @@ import {
   Flame,
   Cpu,
   Palette,
+  Sparkles,
   BookOpen,
   LogOut
 } from 'lucide-react';
 import { Auth } from './components/Auth';
 import { HustleBotLab } from './components/HustleBotLab';
 import { AchievementBadges } from './components/AchievementBadges';
+import { SmartWhiteboard } from './components/SmartWhiteboard';
 import { SymmetryPainter } from './components/SymmetryPainter';
 import { StickerBook } from './components/StickerBook';
 import confetti from 'canvas-confetti';
@@ -126,12 +128,9 @@ export default function App() {
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
 
-  if (!profile) {
-    return <Auth onLogin={handleLogin} />;
-  }
-
   useEffect(() => {
     // Check streak on mount
+    if (!profile) return;
     const newStreak = hustleService.checkStreak();
     if (newStreak > profile.streak) {
       refreshProfile();
@@ -141,7 +140,7 @@ export default function App() {
       if (newStreak === 3) checkBadge('streak_3');
       if (newStreak === 7) checkBadge('streak_7');
     }
-  }, []);
+  }, [profile]);
 
   const checkBadge = (badgeId: string) => {
     const earned = hustleService.addBadge(badgeId);
@@ -216,14 +215,19 @@ export default function App() {
 
   const navItems = [
     { name: 'Mission Map', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { name: 'Smart Whiteboard', icon: <Palette className="w-5 h-5" /> },
     { name: 'Bot Lab', icon: <Cpu className="w-5 h-5" /> },
     { name: 'Achievements', icon: <Award className="w-5 h-5" /> },
-    { name: 'STEAM Sandbox', icon: <Palette className="w-5 h-5" /> },
+    { name: 'STEAM Sandbox', icon: <Sparkles className="w-5 h-5" /> },
     { name: 'Sticker Book', icon: <BookOpen className="w-5 h-5" /> },
     { name: 'Hustle Shop', icon: <ShoppingBag className="w-5 h-5" /> },
     { name: 'Science Lab', icon: <Beaker className="w-5 h-5" /> },
     { name: 'Parent Report', icon: <TrendingUp className="w-5 h-5" /> },
   ];
+
+  if (!profile) {
+    return <Auth onLogin={handleLogin} />;
+  }
 
   return (
     <div className="min-h-screen bg-background text-text-main flex flex-col md:flex-row overflow-hidden">
@@ -626,6 +630,10 @@ export default function App() {
                 </div>
               </section>
             </>
+          )}
+
+          {activeTab === 'Smart Whiteboard' && (
+            <SmartWhiteboard />
           )}
 
           {activeTab === 'Bot Lab' && (

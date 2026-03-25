@@ -45,11 +45,24 @@ const STICKER_DATA: Record<string, { icon: string; color: string }> = {
 };
 
 export const StickerBook: React.FC = () => {
-  const [profile, setProfile] = useState<StudentProfile>(hustleService.getProfile());
-  const [stickers, setStickers] = useState(profile.stickers);
+  const [profile, setProfile] = useState<StudentProfile | null>(null);
+  const [stickers, setStickers] = useState<StudentProfile['stickers']>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [background, setBackground] = useState<'white' | 'space' | 'jungle' | 'lab'>('white');
   const bookRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const p = await hustleService.getProfile();
+      if (p) {
+        setProfile(p);
+        setStickers(p.stickers);
+      }
+    };
+    loadProfile();
+  }, []);
+
+  if (!profile) return null;
 
   const addSticker = (stickerId: string) => {
     const newSticker = {
