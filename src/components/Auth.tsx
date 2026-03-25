@@ -115,6 +115,21 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">School Name / ID</label>
+              <div className="relative">
+                <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                <input
+                  type="text"
+                  required
+                  value={schoolId}
+                  onChange={(e) => setSchoolId(e.target.value)}
+                  placeholder="e.g. XYZ School"
+                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold"
+                />
+              </div>
+            </div>
+
             <AnimatePresence mode="wait">
               {!isLogin && (
                 <motion.div
@@ -123,21 +138,6 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   exit={{ height: 0, opacity: 0 }}
                   className="space-y-6 overflow-hidden"
                 >
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">School Name / ID</label>
-                    <div className="relative">
-                      <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
-                      <input
-                        type="text"
-                        required
-                        value={schoolId}
-                        onChange={(e) => setSchoolId(e.target.value)}
-                        placeholder="e.g. XYZ School"
-                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold"
-                      />
-                    </div>
-                  </div>
-
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Role</label>
                     <select

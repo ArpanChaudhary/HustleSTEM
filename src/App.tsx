@@ -56,6 +56,7 @@ import { AchievementBadges } from './components/AchievementBadges';
 import { SmartWhiteboard } from './components/SmartWhiteboard';
 import { SymmetryPainter } from './components/SymmetryPainter';
 import { StickerBook } from './components/StickerBook';
+import { StemModels } from './components/StemModels';
 import confetti from 'canvas-confetti';
 
 interface Mission {
@@ -218,12 +219,13 @@ export default function App() {
 
   const navItems = [
     { name: 'Mission Map', icon: <LayoutDashboard className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'STEM Models', icon: <Cpu className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
     { name: 'Smart Whiteboard', icon: <Palette className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
-    { name: 'Bot Lab', icon: <Cpu className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
-    { name: 'Achievements', icon: <Award className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'Bot Lab', icon: <Cpu className="w-5 h-5" />, roles: ['student', 'admin'] },
+    { name: 'Achievements', icon: <Award className="w-5 h-5" />, roles: ['student', 'admin'] },
     { name: 'STEAM Sandbox', icon: <Sparkles className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
-    { name: 'Sticker Book', icon: <BookOpen className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
-    { name: 'Hustle Shop', icon: <ShoppingBag className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
+    { name: 'Sticker Book', icon: <BookOpen className="w-5 h-5" />, roles: ['student', 'admin'] },
+    { name: 'Hustle Shop', icon: <ShoppingBag className="w-5 h-5" />, roles: ['student', 'admin'] },
     { name: 'Science Lab', icon: <Beaker className="w-5 h-5" />, roles: ['student', 'teacher', 'admin'] },
     { name: 'Parent Report', icon: <TrendingUp className="w-5 h-5" />, roles: ['student'] },
     { name: 'Teacher Dashboard', icon: <Users className="w-5 h-5" />, roles: ['teacher', 'admin'] },
@@ -436,9 +438,17 @@ export default function App() {
             className={`fixed md:relative top-0 left-0 h-full w-64 bg-surface border-r border-primary/10 z-50 flex flex-col ${!isSidebarOpen && 'hidden md:flex'}`}
           >
             <div className="p-6 flex items-center justify-between">
-              <h1 className="text-xl font-black tracking-tighter italic text-primary">
-                HUSTLE<span className="text-text-main">STEM</span>
-              </h1>
+              <div>
+                <h1 className="text-xl font-black tracking-tighter italic text-primary">
+                  HUSTLE<span className="text-text-main">STEM</span>
+                </h1>
+                <div className="flex items-center gap-1 mt-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate max-w-[120px]">
+                    {profile.schoolId}
+                  </span>
+                </div>
+              </div>
               <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-2 text-text-main">
                 <X className="w-6 h-6" />
               </button>
@@ -645,6 +655,10 @@ export default function App() {
                 </div>
               </section>
             </>
+          )}
+
+          {activeTab === 'STEM Models' && (
+            <StemModels classLevel={profile.classLevel} />
           )}
 
           {activeTab === 'Smart Whiteboard' && (

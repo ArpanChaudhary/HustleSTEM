@@ -61,7 +61,7 @@ const safeStorage = {
 };
 
 let cachedProfile: StudentProfile | null = null;
-let activeUserName: string | null = safeStorage.getItem(ACTIVE_USER_KEY);
+let activeUserKey: string | null = safeStorage.getItem(ACTIVE_USER_KEY);
 
 const getProfiles = (): Record<string, StudentProfile> => {
   const data = safeStorage.getItem(STORAGE_KEY);
@@ -80,7 +80,9 @@ const saveProfiles = (profiles: Record<string, StudentProfile>) => {
 export const hustleService = {
   login: (name: string, role: UserRole = 'student', schoolId: string = 'default'): StudentProfile => {
     const profiles = getProfiles();
-    if (!profiles[name]) {
+    const userKey = `${name}:${schoolId}`;
+
+    if (!profiles[userKey]) {
       // Create new profile if it doesn't exist
       const defaultProfile: StudentProfile = {
         name,
@@ -103,48 +105,48 @@ export const hustleService = {
         stickers: [],
         unlockedStickers: ['Star'],
       };
-      profiles[name] = defaultProfile;
+      profiles[userKey] = defaultProfile;
       saveProfiles(profiles);
     } else {
       // Update role and schoolId if they changed or were missing
       let changed = false;
-      if (!profiles[name].role || profiles[name].role !== role) {
-        profiles[name].role = role;
+      if (!profiles[userKey].role || profiles[userKey].role !== role) {
+        profiles[userKey].role = role;
         changed = true;
       }
-      if (!profiles[name].schoolId || (schoolId !== 'default' && profiles[name].schoolId !== schoolId)) {
-        profiles[name].schoolId = schoolId;
+      if (!profiles[userKey].schoolId || (schoolId !== 'default' && profiles[userKey].schoolId !== schoolId)) {
+        profiles[userKey].schoolId = schoolId;
         changed = true;
       }
       if (changed) saveProfiles(profiles);
     }
     
-    activeUserName = name;
-    safeStorage.setItem(ACTIVE_USER_KEY, name);
-    cachedProfile = profiles[name];
+    activeUserKey = userKey;
+    safeStorage.setItem(ACTIVE_USER_KEY, userKey);
+    cachedProfile = profiles[userKey];
     return cachedProfile;
   },
 
   logout: () => {
-    activeUserName = null;
+    activeUserKey = null;
     cachedProfile = null;
     safeStorage.removeItem(ACTIVE_USER_KEY);
   },
 
   getProfile: async (): Promise<StudentProfile | null> => {
-    if (!activeUserName) return null;
+    if (!activeUserKey) return null;
     if (cachedProfile) return cachedProfile;
 
     const profiles = getProfiles();
-    cachedProfile = profiles[activeUserName] || null;
+    cachedProfile = profiles[activeUserKey] || null;
     return cachedProfile;
   },
 
   saveProfile: async (profile: StudentProfile) => {
-    if (!activeUserName) return;
+    if (!activeUserKey) return;
     cachedProfile = profile;
     const profiles = getProfiles();
-    profiles[activeUserName] = profile;
+    profiles[activeUserKey] = profile;
     saveProfiles(profiles);
   },
 
@@ -233,13 +235,13 @@ export const hustleService = {
 
   addPoints: (amount: number) => {
     const profile = cachedProfile;
-    if (profile) {
+    if (profile && profile.role === 'student') {
       profile.points += amount;
       profile.totalXp += amount;
       hustleService.saveProfile(profile);
       return profile.points;
     }
-    return 0;
+    return profile?.points || 0;
   },
 
   spendPoints: (amount: number) => {
@@ -273,8 +275,11 @@ export const hustleService = {
 
     if (!profile.completedLevels.includes(levelId)) {
       profile.completedLevels.push(levelId);
-      profile.points += 100;
-      profile.totalXp += 100;
+      
+      if (profile.role === 'student') {
+        profile.points += 100;
+        profile.totalXp += 100;
+      }
 
       const stickerMap: Record<number, string> = {
         11: 'Lion', 12: 'Beaker', 13: 'Puzzle',
