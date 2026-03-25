@@ -33,6 +33,7 @@ import {
   Rocket,
   PawPrint,
   Zap,
+  Target,
   Bot,
   Star,
   TrendingUp,
@@ -57,6 +58,7 @@ import { SmartWhiteboard } from './components/SmartWhiteboard';
 import { SymmetryPainter } from './components/SymmetryPainter';
 import { StickerBook } from './components/StickerBook';
 import { StemModels } from './components/StemModels';
+import { FloatingBackground } from './components/FloatingBackground';
 import confetti from 'canvas-confetti';
 
 interface Mission {
@@ -237,7 +239,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-text-main flex flex-col md:flex-row overflow-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-primary/30 relative flex flex-col">
+      <FloatingBackground />
       {/* Game Modal */}
       <AnimatePresence>
         {selectedMission && (
@@ -415,133 +418,140 @@ export default function App() {
       </AnimatePresence>
 
       {/* Mobile Header */}
-      <header className="md:hidden flex items-center justify-between p-4 border-b border-primary/10 bg-background z-50">
-        <button onClick={() => setIsSidebarOpen(true)} className="p-2">
-          <Menu className="w-6 h-6 text-primary" />
+      <div className="md:hidden glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-white/10 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-slate-900 shadow-[0_0_20px_rgba(34,211,238,0.3)]">
+            <Rocket className="w-6 h-6" />
+          </div>
+          <span className="text-xl font-black italic tracking-tighter text-white">HUSTLE<span className="text-primary">STEM</span></span>
+        </div>
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 hover:bg-white/5 rounded-xl transition-colors text-slate-400"
+        >
+          {isSidebarOpen ? <X /> : <Menu />}
         </button>
-        <div className="flex items-center gap-2 bg-primary/5 px-3 py-1 rounded-full border border-primary/30">
-          <Coins className="w-4 h-4 text-primary" />
-          <span className="font-bold text-sm text-primary">{profile.points} PTS</span>
-        </div>
-        <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center">
-          <User className="w-5 h-5 text-primary" />
-        </div>
-      </header>
+      </div>
 
-      {/* Sidebar */}
-      <AnimatePresence>
-        {(isSidebarOpen || window.innerWidth >= 768) && (
-          <motion.aside
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            className={`fixed md:relative top-0 left-0 h-full w-64 bg-surface border-r border-primary/10 z-50 flex flex-col ${!isSidebarOpen && 'hidden md:flex'}`}
-          >
-            <div className="p-6 flex items-center justify-between">
-              <div>
-                <h1 className="text-xl font-black tracking-tighter italic text-primary">
-                  HUSTLE<span className="text-text-main">STEM</span>
-                </h1>
-                <div className="flex items-center gap-1 mt-1">
-                  <ShieldCheck className="w-3 h-3 text-emerald-500" />
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate max-w-[120px]">
-                    {profile.schoolId}
-                  </span>
+      <div className="flex-1 flex">
+        {/* Sidebar */}
+        <AnimatePresence>
+          {(isSidebarOpen || window.innerWidth >= 768) && (
+            <motion.aside
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              className={`fixed md:sticky top-0 left-0 h-screen w-72 glass border-r border-white/10 z-50 flex flex-col ${!isSidebarOpen && 'hidden md:flex'}`}
+            >
+              <div className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-4 px-2">
+                  <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-slate-900 shadow-[0_0_25px_rgba(34,211,238,0.4)] rotate-3">
+                    <Rocket className="w-7 h-7" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-black italic tracking-tighter text-white leading-none">HUSTLE<span className="text-primary">STEM</span></span>
+                    <span className="text-[10px] font-black text-primary/60 uppercase tracking-[0.2em] mt-1">{profile.schoolId}</span>
+                  </div>
                 </div>
-              </div>
-              <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-2 text-text-main">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <nav className="flex-1 px-4 py-4 space-y-2">
-              {navItems.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={() => {
-                    setActiveTab(item.name);
-                    if (window.innerWidth < 768) setIsSidebarOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                    activeTab === item.name 
-                      ? 'bg-primary text-white font-bold shadow-[0_0_15px_rgba(14,165,233,0.3)]' 
-                      : 'text-gray-500 hover:bg-primary/5 hover:text-primary'
-                  }`}
-                >
-                  {item.icon}
-                  <span>{item.name}</span>
+                <button onClick={() => setIsSidebarOpen(false)} className="md:hidden p-2 text-slate-400">
+                  <X className="w-6 h-6" />
                 </button>
-              ))}
-            </nav>
+              </div>
 
-            <div className="p-6 border-t border-primary/10 space-y-4">
-              {/* User Profile & Logout */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center">
-                    <User className="w-6 h-6 text-primary" />
+              <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+                {navItems.map((item) => (
+                  <button
+                    key={item.name}
+                    onClick={() => {
+                      setActiveTab(item.name);
+                      if (window.innerWidth < 768) setIsSidebarOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all group
+                      ${activeTab === item.name 
+                        ? 'bg-primary text-slate-900 shadow-[0_0_20px_rgba(34,211,238,0.2)]' 
+                        : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'}
+                    `}
+                  >
+                    <div className={`w-5 h-5 transition-transform group-hover:scale-110 ${activeTab === item.name ? 'text-slate-900' : 'text-primary'}`}>
+                      {item.icon}
+                    </div>
+                    <span>{item.name}</span>
+                    {activeTab === item.name && (
+                      <motion.div layoutId="activeTab" className="ml-auto w-1.5 h-1.5 rounded-full bg-slate-900" />
+                    )}
+                  </button>
+                ))}
+              </nav>
+
+              <div className="p-6 border-t border-white/10 space-y-6">
+                {/* User Profile Summary */}
+                <div className="flex items-center gap-4 px-2">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent p-0.5 shadow-lg">
+                    <div className="w-full h-full rounded-[14px] bg-slate-900 flex items-center justify-center text-white font-black text-xl">
+                      {profile.name.charAt(0)}
+                    </div>
                   </div>
-                  <div className="overflow-hidden">
-                    <p className="text-xs font-black text-text-main truncate">{profile.name}</p>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Class {profile.classLevel}</p>
+                  <div>
+                    <h3 className="font-black text-white leading-tight">{profile.name}</h3>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                      {profile.role} • Class {profile.classLevel}
+                    </p>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Zap className="w-3 h-3 text-amber-400" />
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Streak</span>
+                    </div>
+                    <p className="text-lg font-black text-white">{profile.streak}d</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-3 border border-white/10">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Target className="w-3 h-3 text-primary" />
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Goal</span>
+                    </div>
+                    <p className="text-lg font-black text-white">85%</p>
+                  </div>
+                </div>
+
                 <button 
                   onClick={handleLogout}
-                  className="p-2 hover:bg-red-50 text-red-400 hover:text-red-500 rounded-xl transition-colors group"
-                  title="Logout"
+                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm text-red-400 hover:bg-red-400/10 transition-all group"
                 >
-                  <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                  <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                  Logout
                 </button>
               </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
 
-              {/* Streak Display */}
-              <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 flex items-center gap-4">
-                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-                  <Flame className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Streak</div>
-                  <div className="text-lg font-black text-orange-600">{profile.streak} Days</div>
-                </div>
-              </div>
-
-              <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10">
-                <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-2">Daily Goal</p>
-                <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                  <div className="bg-primary h-full w-3/4 shadow-[0_0_10px_rgba(14,165,233,0.5)]" />
-                </div>
-                <p className="text-xs text-right mt-2 text-primary font-bold">750/1000 XP</p>
-              </div>
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col relative z-10 min-h-0">
+          {/* Desktop Header */}
+          <header className="hidden md:flex items-center justify-end p-6 gap-6 shrink-0">
+            <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/10 shadow-[inset_0_0_10px_rgba(34,211,238,0.05)]">
+              <Coins className="w-5 h-5 text-primary" />
+              <span className="font-black text-lg tracking-tight text-primary">{profile.points} <span className="text-xs text-slate-500">HUSTLE-POINTS</span></span>
             </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col relative overflow-y-auto">
-        {/* Desktop Header */}
-        <header className="hidden md:flex items-center justify-end p-6 gap-6">
-          <div className="flex items-center gap-3 bg-primary/5 px-4 py-2 rounded-2xl border border-primary/30 shadow-[inset_0_0_10px_rgba(14,165,233,0.1)]">
-            <Coins className="w-5 h-5 text-primary" />
-            <span className="font-black text-lg tracking-tight text-primary">{profile.points} <span className="text-xs text-gray-500">HUSTLE-POINTS</span></span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-sm font-black text-text-main">{profile.name}</p>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Class {profile.classLevel}</p>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm font-black text-white">{profile.name}</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Class {profile.classLevel}</p>
+              </div>
+              <button 
+                onClick={handleLogout}
+                className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-400/10 hover:border-red-400/30 transition-all group"
+                title="Logout"
+              >
+                <LogOut className="w-6 h-6 text-primary group-hover:text-red-400 group-hover:scale-110 transition-all" />
+              </button>
             </div>
-            <button 
-              onClick={handleLogout}
-              className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-all group"
-              title="Logout"
-            >
-              <LogOut className="w-6 h-6 text-primary group-hover:text-red-500 group-hover:scale-110 transition-all" />
-            </button>
-          </div>
-        </header>
+          </header>
 
-        <div className="p-6 md:p-10 max-w-5xl mx-auto w-full">
+        <div className="p-6 md:p-10 max-w-6xl mx-auto w-full">
           {activeTab === 'Mission Map' && (
             <>
               {/* Class Selector */}
@@ -600,10 +610,10 @@ export default function App() {
                             handleUnlockLevel(mission.id, mission.cost);
                           }
                         }}
-                        className={`group relative bg-surface rounded-3xl p-8 border transition-all duration-500 cursor-pointer overflow-hidden ${
+                        className={`group relative bg-white/5 backdrop-blur-md border rounded-3xl p-8 transition-all duration-500 cursor-pointer overflow-hidden ${
                           isCompleted ? 'border-primary/40 bg-primary/5' : 
-                          (!isUnlocked && profile.role === 'student') ? 'border-primary/5 opacity-80 grayscale hover:grayscale-0' :
-                          'border-primary/10 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10'
+                          (!isUnlocked && profile.role === 'student') ? 'border-white/5 opacity-80 grayscale hover:grayscale-0' :
+                          'border-white/10 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10'
                         }`}
                       >
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -611,14 +621,14 @@ export default function App() {
                         </div>
                         
                         <div className={`w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform duration-500 border border-primary/5 ${
-                          isCompleted ? 'border-primary/30 shadow-[0_0_15px_rgba(14,165,233,0.2)]' : 
-                          (!isUnlocked && profile.role === 'student') ? 'text-gray-400' : ''
+                          isCompleted ? 'border-primary/30 shadow-[0_0_15px_rgba(34,211,238,0.2)]' : 
+                          (!isUnlocked && profile.role === 'student') ? 'text-slate-500' : ''
                         }`}>
                           {(isUnlocked || profile.role !== 'student') ? mission.icon : <Lock className="w-8 h-8" />}
                         </div>
                         
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className={`text-xl font-black transition-colors ${(!isUnlocked && profile.role === 'student') ? 'text-gray-400' : 'group-hover:text-primary'}`}>
+                          <h3 className={`text-xl font-black transition-colors ${(!isUnlocked && profile.role === 'student') ? 'text-slate-500' : 'group-hover:text-primary'}`}>
                             {(isUnlocked || profile.role !== 'student') ? mission.title : 'LOCKED MISSION'}
                           </h3>
                           {isCompleted && (
@@ -628,7 +638,7 @@ export default function App() {
                           )}
                         </div>
                         
-                        <div className="flex items-center gap-2 text-gray-500 text-sm font-bold">
+                        <div className="flex items-center gap-2 text-slate-400 text-sm font-bold">
                           <Coins className="w-4 h-4 text-primary/70" />
                           <span>
                             {profile.role !== 'student' 
@@ -691,14 +701,14 @@ export default function App() {
                   { name: 'Neon Bot', cost: 1000, color: 'text-cyan-400' },
                   { name: 'Space Bot', cost: 2000, color: 'text-purple-400' },
                 ].map((skin) => (
-                  <div key={skin.name} className="bg-surface p-6 rounded-3xl border border-primary/5 flex items-center justify-between">
+                  <div key={skin.name} className="bg-white/5 backdrop-blur-md p-6 rounded-3xl border border-white/10 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className={`w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center ${skin.color}`}>
                         <Bot className="w-10 h-10" />
                       </div>
                       <div>
-                        <h3 className="font-black text-xl text-text-main">{skin.name}</h3>
-                        <p className="text-sm text-gray-500">{skin.cost} PTS</p>
+                        <h3 className="font-black text-xl text-white">{skin.name}</h3>
+                        <p className="text-sm text-slate-400">{skin.cost} PTS</p>
                       </div>
                     </div>
                     {profile.unlockedSkins.includes(skin.name) ? (
@@ -724,30 +734,30 @@ export default function App() {
 
           {activeTab === 'Parent Report' && (
             <section>
-              <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter mb-2">PARENT REPORT</h2>
-              <p className="text-gray-400 mb-8">Tracking {profile.name}'s Hustle Journey</p>
+              <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter mb-2 text-white">PARENT REPORT</h2>
+              <p className="text-slate-400 mb-8">Tracking {profile.name}'s Hustle Journey</p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                <div className="bg-surface p-8 rounded-3xl border border-primary/5 text-center shadow-sm">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Hustle Score</p>
+                <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 text-center shadow-sm">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hustle Score</p>
                   <div className="text-5xl font-black text-primary mb-2">{hustleService.calculateHustleScore()}%</div>
-                  <p className="text-xs text-gray-500">Based on problem-solving speed</p>
+                  <p className="text-xs text-slate-500">Based on problem-solving speed</p>
                 </div>
-                <div className="bg-surface p-8 rounded-3xl border border-primary/5 text-center shadow-sm">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Levels Completed</p>
-                  <div className="text-5xl font-black text-text-main mb-2">{profile.completedLevels.length}</div>
-                  <p className="text-xs text-gray-500">Out of 50 total missions</p>
+                <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 text-center shadow-sm">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Levels Completed</p>
+                  <div className="text-5xl font-black text-white mb-2">{profile.completedLevels.length}</div>
+                  <p className="text-xs text-slate-500">Out of 50 total missions</p>
                 </div>
-                <div className="bg-surface p-8 rounded-3xl border border-primary/5 text-center shadow-sm">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Hustle Points</p>
-                  <div className="text-5xl font-black text-yellow-500 mb-2">{profile.points}</div>
-                  <p className="text-xs text-gray-500">Available to spend in shop</p>
+                <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 text-center shadow-sm">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hustle Points</p>
+                  <div className="text-5xl font-black text-amber-400 mb-2">{profile.points}</div>
+                  <p className="text-xs text-slate-500">Available to spend in shop</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-surface p-8 rounded-3xl border border-primary/5 shadow-sm">
-                  <h3 className="font-black text-xl mb-6 flex items-center gap-2 text-text-main">
+                <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-sm">
+                  <h3 className="font-black text-xl mb-6 flex items-center gap-2 text-white">
                     <Award className="w-6 h-6 text-primary" />
                     Skill Breakdown
                   </h3>
@@ -759,15 +769,15 @@ export default function App() {
                       { name: 'STEM Knowledge', value: 60 },
                     ].map((skill) => (
                       <div key={skill.name}>
-                        <div className="flex justify-between text-sm font-bold mb-2 text-gray-700">
+                        <div className="flex justify-between text-sm font-bold mb-2 text-slate-300">
                           <span>{skill.name}</span>
                           <span className="text-primary">{skill.value}%</span>
                         </div>
-                        <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
+                        <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden">
                           <motion.div 
                             initial={{ width: 0 }}
                             animate={{ width: `${skill.value}%` }}
-                            className="bg-primary h-full shadow-[0_0_10px_rgba(14,165,233,0.3)]"
+                            className="bg-primary h-full shadow-[0_0_10px_rgba(34,211,238,0.3)]"
                           />
                         </div>
                       </div>
@@ -775,19 +785,19 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="bg-surface p-8 rounded-3xl border border-primary/5 shadow-sm">
-                  <h3 className="font-black text-xl mb-6 flex items-center gap-2 text-text-main">
+                <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-sm">
+                  <h3 className="font-black text-xl mb-6 flex items-center gap-2 text-white">
                     <LayoutDashboard className="w-6 h-6 text-primary" />
                     Recent Hustles
                   </h3>
                   <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                     {profile.completedLevels.length === 0 ? (
-                      <p className="text-gray-500 text-center py-10 font-bold italic">No missions completed yet, Hustler!</p>
+                      <p className="text-slate-500 text-center py-10 font-bold italic">No missions completed yet, Hustler!</p>
                     ) : (
                       profile.completedLevels.slice().reverse().map((levelId) => {
                         const moves = profile.levelMoves?.[levelId]?.[0] || [];
                         return (
-                          <div key={levelId} className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
+                          <div key={levelId} className="bg-white/5 p-4 rounded-2xl border border-white/10">
                             <div className="flex justify-between items-center mb-2">
                               <span className="font-black text-sm text-primary">Level {levelId}</span>
                               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
@@ -813,43 +823,43 @@ export default function App() {
 
           {activeTab === 'Teacher Dashboard' && (
             <section>
-              <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter mb-8 uppercase">School: {profile.schoolId}</h2>
+              <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter mb-8 uppercase text-white">School: {profile.schoolId}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div className="bg-surface p-8 rounded-3xl border border-primary/10 shadow-xl shadow-primary/5">
+                <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl shadow-primary/5">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
                       <Users className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-xs font-black text-gray-400 uppercase tracking-widest">School Students</p>
-                      <h3 className="text-2xl font-black">{hustleService.getSchoolUsers(profile.schoolId).filter(u => u.role === 'student').length}</h3>
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-widest">School Students</p>
+                      <h3 className="text-2xl font-black text-white">{hustleService.getSchoolUsers(profile.schoolId).filter(u => u.role === 'student').length}</h3>
                     </div>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-surface p-8 rounded-3xl border border-primary/10 shadow-xl shadow-primary/5">
-                <h3 className="text-xl font-black mb-6">Student Roster</h3>
+              <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl shadow-primary/5">
+                <h3 className="text-xl font-black mb-6 text-white">Student Roster</h3>
                 <div className="space-y-4">
                   {hustleService.getSchoolUsers(profile.schoolId).filter(u => u.role === 'student').map(student => (
-                    <div key={student.name} className="flex items-center justify-between p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                    <div key={student.name} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm">
+                        <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-primary shadow-sm border border-white/10">
                           <User className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="font-black text-sm">{student.name}</p>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Class {student.classLevel} • {student.totalXp} XP</p>
+                          <p className="font-black text-sm text-white">{student.name}</p>
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Class {student.classLevel} • {student.totalXp} XP</p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="text-xs font-black text-primary">{student.points} PTS</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{student.completedLevels.length} Missions</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{student.completedLevels.length} Missions</p>
                       </div>
                     </div>
                   ))}
                   {hustleService.getSchoolUsers(profile.schoolId).filter(u => u.role === 'student').length === 0 && (
-                    <p className="text-gray-500 font-bold italic text-center py-10">No students registered in this school yet.</p>
+                    <p className="text-slate-500 font-bold italic text-center py-10">No students registered in this school yet.</p>
                   )}
                 </div>
               </div>
@@ -858,21 +868,21 @@ export default function App() {
 
           {activeTab === 'Admin Panel' && (
             <section>
-              <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter mb-8 uppercase">Admin: {profile.schoolId}</h2>
+              <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter mb-8 uppercase text-white">Admin: {profile.schoolId}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-surface p-8 rounded-3xl border border-primary/10 shadow-xl shadow-primary/5">
-                  <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+                <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-xl shadow-primary/5">
+                  <h3 className="text-xl font-black mb-6 flex items-center gap-2 text-white">
                     <Users className="w-6 h-6 text-primary" />
                     School Staff & Students
                   </h3>
                   <div className="space-y-4">
                     {hustleService.getSchoolUsers(profile.schoolId).map(user => (
-                      <div key={user.name} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div key={user.name} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10">
                         <div className="flex items-center gap-4">
                           <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
-                            user.role === 'admin' ? 'bg-red-100 text-red-500' : 
-                            user.role === 'teacher' ? 'bg-amber-100 text-amber-500' : 
+                            user.role === 'admin' ? 'bg-red-400/10 text-red-400' : 
+                            user.role === 'teacher' ? 'bg-amber-400/10 text-amber-400' : 
                             'bg-primary/10 text-primary'
                           }`}>
                             {user.role === 'admin' ? <ShieldCheck className="w-5 h-5" /> : 
@@ -880,11 +890,11 @@ export default function App() {
                              <User className="w-5 h-5" />}
                           </div>
                           <div>
-                            <p className="font-black text-sm">{user.name}</p>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{user.role}</p>
+                            <p className="font-black text-sm text-white">{user.name}</p>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{user.role}</p>
                           </div>
                         </div>
-                        <div className="px-3 py-1 bg-white rounded-lg border border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <div className="px-3 py-1 bg-slate-900 rounded-lg border border-white/10 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                           {user.schoolId}
                         </div>
                       </div>
@@ -892,18 +902,18 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="bg-surface p-8 rounded-3xl border border-red-100 shadow-xl shadow-red-500/5">
+                <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-red-400/20 shadow-xl shadow-red-500/5">
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center text-red-500">
+                    <div className="w-12 h-12 bg-red-400/10 rounded-2xl flex items-center justify-center text-red-400">
                       <ShieldCheck className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-black">School Controls</h3>
-                      <p className="text-sm text-gray-400 font-bold">Manage {profile.schoolId} settings.</p>
+                      <h3 className="text-xl font-black text-white">School Controls</h3>
+                      <p className="text-sm text-slate-400 font-bold">Manage {profile.schoolId} settings.</p>
                     </div>
                   </div>
-                  <div className="p-6 bg-red-50 rounded-2xl border border-red-100 mb-6">
-                    <p className="text-red-600 text-sm font-bold">Danger Zone: These actions are permanent.</p>
+                  <div className="p-6 bg-red-400/5 rounded-2xl border border-red-400/10 mb-6">
+                    <p className="text-red-400 text-sm font-bold">Danger Zone: These actions are permanent.</p>
                   </div>
                   <button 
                     onClick={() => {
@@ -922,13 +932,19 @@ export default function App() {
         </div>
       </main>
 
-      {/* Overlay for mobile sidebar */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
     </div>
-  );
+  </div>
+);
 }

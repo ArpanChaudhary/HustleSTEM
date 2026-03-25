@@ -52,16 +52,16 @@ export const HustleBotLab: React.FC<HustleBotLabProps> = ({ profile, onUpdate })
   };
 
   return (
-    <div id="bot-lab" className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl border border-slate-800 relative overflow-hidden">
+    <div id="bot-lab" className="glass-card p-8 text-white relative overflow-hidden">
       {/* Background Grid */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none" 
-           style={{ backgroundImage: 'radial-gradient(#38bdf8 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
+      <div className="absolute inset-0 opacity-5 pointer-events-none" 
+           style={{ backgroundImage: 'radial-gradient(#22d3ee 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
 
       <div className="relative z-10 flex flex-col lg:flex-row gap-12">
         {/* Bot Preview Section */}
-        <div className="flex-1 flex flex-col items-center justify-center bg-slate-800/50 rounded-3xl p-12 border border-slate-700/50 backdrop-blur-sm">
+        <div className="flex-1 flex flex-col items-center justify-center bg-white/5 rounded-3xl p-12 border border-white/10 backdrop-blur-sm">
           <div className="mb-8 text-center">
-            <h2 className="text-3xl font-black text-sky-400 tracking-tight uppercase">Hustle-Bot Lab</h2>
+            <h2 className="text-3xl font-black text-primary tracking-tight uppercase italic">Hustle-Bot Lab</h2>
             <p className="text-slate-400 font-mono text-sm">Build your ultimate STEM companion</p>
           </div>
 
@@ -130,15 +130,15 @@ export const HustleBotLab: React.FC<HustleBotLabProps> = ({ profile, onUpdate })
 
         {/* Customization Controls */}
         <div className="w-full lg:w-96 flex flex-col gap-6">
-          <div className="flex gap-2 p-1 bg-slate-800 rounded-2xl border border-slate-700">
+          <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/10">
             {(['head', 'body', 'arms', 'legs'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-3 rounded-xl font-bold text-sm uppercase transition-all ${
                   activeTab === tab 
-                    ? 'bg-sky-500 text-white shadow-lg' 
-                    : 'text-slate-400 hover:bg-slate-700'
+                    ? 'bg-primary text-slate-900 shadow-lg' 
+                    : 'text-slate-400 hover:bg-white/10'
                 }`}
               >
                 {tab}
@@ -159,14 +159,14 @@ export const HustleBotLab: React.FC<HustleBotLabProps> = ({ profile, onUpdate })
                   disabled={!isUnlocked && !canAfford}
                   className={`group relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
                     isActive 
-                      ? 'bg-sky-500/20 border-sky-500 shadow-[0_0_20px_rgba(14,165,233,0.2)]' 
+                      ? 'bg-primary/20 border-primary shadow-[0_0_20px_rgba(34,211,238,0.2)]' 
                       : isUnlocked
-                      ? 'bg-slate-800 border-slate-700 hover:border-sky-500/50'
-                      : 'bg-slate-900 border-slate-800 opacity-80'
+                      ? 'bg-white/5 border-white/10 hover:border-primary/50'
+                      : 'bg-slate-900/50 border-white/5 opacity-80'
                   }`}
                 >
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    isActive ? 'bg-sky-500 text-white' : 'bg-slate-700 text-slate-400'
+                    isActive ? 'bg-primary text-slate-900' : 'bg-white/10 text-slate-400'
                   }`}>
                     <part.icon className="w-6 h-6" />
                   </div>
@@ -174,7 +174,7 @@ export const HustleBotLab: React.FC<HustleBotLabProps> = ({ profile, onUpdate })
                   <div className="flex-1 text-left">
                     <div className="font-bold text-lg">{part.id}</div>
                     {!isUnlocked && (
-                      <div className="flex items-center gap-1 text-yellow-400 font-mono text-sm">
+                      <div className="flex items-center gap-1 text-amber-400 font-mono text-sm">
                         <Zap className="w-3 h-3" />
                         {part.cost}
                       </div>
@@ -182,8 +182,8 @@ export const HustleBotLab: React.FC<HustleBotLabProps> = ({ profile, onUpdate })
                   </div>
 
                   {isActive ? (
-                    <div className="w-6 h-6 bg-sky-500 rounded-full flex items-center justify-center">
-                      <Zap className="w-3 h-3 text-white" />
+                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                      <Zap className="w-3 h-3 text-slate-900" />
                     </div>
                   ) : !isUnlocked ? (
                     <Lock className={`w-5 h-5 ${canAfford ? 'text-slate-500' : 'text-red-500'}`} />
@@ -195,10 +195,10 @@ export const HustleBotLab: React.FC<HustleBotLabProps> = ({ profile, onUpdate })
             })}
           </div>
 
-          <div className="mt-auto p-6 bg-sky-500/10 rounded-3xl border border-sky-500/20">
+          <div className="mt-auto p-6 bg-primary/5 rounded-3xl border border-primary/20">
             <div className="flex items-center gap-3 mb-2">
-              <Settings className="w-5 h-5 text-sky-400" />
-              <span className="font-bold text-sky-400 uppercase text-sm tracking-widest">System Status</span>
+              <Settings className="w-5 h-5 text-primary" />
+              <span className="font-bold text-primary uppercase text-sm tracking-widest">System Status</span>
             </div>
             <p className="text-slate-400 text-xs font-mono leading-relaxed">
               All systems operational. Bot customization allows for specialized STEM mission performance. Earn more points to unlock advanced components.

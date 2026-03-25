@@ -122,7 +122,7 @@ export const StemModels: React.FC<StemModelsProps> = ({ classLevel }) => {
       .attr('y', 120)
       .attr('text-anchor', 'middle')
       .attr('font-weight', 'black')
-      .attr('class', 'text-slate-900')
+      .attr('class', 'fill-white')
       .text('Click to hear the beat!');
 
     heart.on('click', () => {
@@ -206,36 +206,36 @@ export const StemModels: React.FC<StemModelsProps> = ({ classLevel }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
-      <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-[radial-gradient(circle_at_top_right,_#f0f9ff_0%,_#ffffff_100%)]">
+    <div className="flex flex-col h-full glass-card overflow-hidden">
+      <div className="p-8 border-b border-white/10 flex items-center justify-between bg-white/5 backdrop-blur-md">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20 rotate-12">
+            <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20 rotate-12">
               <Sparkles className="w-6 h-6" />
             </div>
-            <h2 className="text-2xl font-black italic tracking-tighter text-slate-900 uppercase">
+            <h2 className="text-2xl font-black italic tracking-tighter text-white uppercase">
               STEM <span className="text-primary">Models</span>
             </h2>
           </div>
-          <p className="text-slate-500 font-bold text-sm">Interactive 3D learning for Class {classLevel}</p>
+          <p className="text-slate-400 font-bold text-sm">Interactive 3D learning for Class {classLevel}</p>
         </div>
 
-        <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+        <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-2xl border border-white/10">
           <button
             onClick={() => setSelectedModel('plant')}
-            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedModel === 'plant' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedModel === 'plant' ? 'bg-primary text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
           >
             Plant
           </button>
           <button
             onClick={() => setSelectedModel('heart')}
-            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedModel === 'heart' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedModel === 'heart' ? 'bg-primary text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
           >
             Heart
           </button>
           <button
             onClick={() => setSelectedModel('solar')}
-            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedModel === 'solar' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${selectedModel === 'solar' ? 'bg-primary text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
           >
             Solar
           </button>
@@ -245,10 +245,10 @@ export const StemModels: React.FC<StemModelsProps> = ({ classLevel }) => {
       <div className="flex-1 relative min-h-[400px]">
         <svg ref={svgRef} className="w-full h-full" />
         
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-white/80 backdrop-blur-md px-6 py-3 rounded-full border border-slate-200 shadow-xl">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 shadow-xl">
           <button 
             onClick={() => setIsPlaying(!isPlaying)}
-            className="p-2 bg-primary text-white rounded-full hover:scale-110 transition-transform"
+            className="p-2 bg-primary text-slate-900 rounded-full hover:scale-110 transition-transform"
           >
             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           </button>
@@ -261,8 +261,8 @@ export const StemModels: React.FC<StemModelsProps> = ({ classLevel }) => {
           >
             <RotateCcw className="w-5 h-5" />
           </button>
-          <div className="h-4 w-[1px] bg-slate-200 mx-2" />
-          <div className="flex items-center gap-2 text-slate-500">
+          <div className="h-4 w-[1px] bg-white/10 mx-2" />
+          <div className="flex items-center gap-2 text-slate-400">
             <Info className="w-4 h-4" />
             <span className="text-[10px] font-black uppercase tracking-widest">
               {selectedModel === 'solar' ? 'Drag planets to explore orbits' : 
@@ -273,27 +273,27 @@ export const StemModels: React.FC<StemModelsProps> = ({ classLevel }) => {
         </div>
       </div>
 
-      <div className="p-8 bg-slate-50 border-t border-slate-100">
+      <div className="p-8 bg-white/5 border-t border-white/10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+          <div className="bg-white/5 p-6 rounded-3xl border border-white/10 shadow-sm">
             <h4 className="text-xs font-black text-primary uppercase tracking-widest mb-2">Did you know?</h4>
-            <p className="text-sm text-slate-600 font-bold leading-relaxed">
+            <p className="text-sm text-slate-300 font-bold leading-relaxed">
               {selectedModel === 'solar' ? 'Jupiter is so big that all the other planets in the solar system could fit inside it!' :
                selectedModel === 'heart' ? 'Your heart beats about 100,000 times in a single day!' :
                'Plants use sunlight, water, and air to make their own food. This is called photosynthesis!'}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-            <h4 className="text-xs font-black text-emerald-500 uppercase tracking-widest mb-2">STEM Concept</h4>
-            <p className="text-sm text-slate-600 font-bold leading-relaxed">
+          <div className="bg-white/5 p-6 rounded-3xl border border-white/10 shadow-sm">
+            <h4 className="text-xs font-black text-emerald-400 uppercase tracking-widest mb-2">STEM Concept</h4>
+            <p className="text-sm text-slate-300 font-bold leading-relaxed">
               {selectedModel === 'solar' ? 'Gravity: The invisible force that keeps planets orbiting around the Sun.' :
                selectedModel === 'heart' ? 'Circulation: How the heart pumps blood to carry oxygen to your whole body.' :
                'Biology: The study of living things and how they grow and change.'}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-            <h4 className="text-xs font-black text-amber-500 uppercase tracking-widest mb-2">Interactive Task</h4>
-            <p className="text-sm text-slate-600 font-bold leading-relaxed">
+          <div className="bg-white/5 p-6 rounded-3xl border border-white/10 shadow-sm">
+            <h4 className="text-xs font-black text-amber-400 uppercase tracking-widest mb-2">Interactive Task</h4>
+            <p className="text-sm text-slate-300 font-bold leading-relaxed">
               {selectedModel === 'solar' ? 'Try to identify which planet moves the fastest around the Sun!' :
                selectedModel === 'heart' ? 'Click the heart and count how many times it beats in 10 seconds.' :
                'Reset the model and watch how the stem grows before the flower blooms.'}

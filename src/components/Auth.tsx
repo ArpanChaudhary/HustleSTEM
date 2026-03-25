@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, ChevronRight, Sparkles, Users } from 'lucide-react';
 import { hustleService, UserRole } from '../services/hustleService';
+import { FloatingBackground } from './FloatingBackground';
 
 import { validateName, formatInput } from '../lib/validation';
 
@@ -53,24 +54,26 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_#f0f9ff_0%,_#f8fafc_100%)]">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      <FloatingBackground />
+      
+      <div className="max-w-md w-full relative z-10">
         <div className="text-center mb-12">
           <motion.div
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="w-20 h-20 bg-primary rounded-[2rem] mx-auto mb-6 flex items-center justify-center text-white shadow-2xl shadow-primary/20 rotate-12"
+            className="w-20 h-20 bg-primary rounded-[2rem] mx-auto mb-6 flex items-center justify-center text-white shadow-[0_0_30px_rgba(34,211,238,0.4)] rotate-12"
           >
             <Sparkles className="w-10 h-10" />
           </motion.div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-slate-900 mb-2">
+          <h1 className="text-4xl font-black italic tracking-tighter text-white mb-2">
             HUSTLE<span className="text-primary">STEM</span>
           </h1>
-          <p className="text-slate-500 font-bold">Join the community of young innovators!</p>
+          <p className="text-slate-400 font-bold">Join the community of young innovators!</p>
           
-          <div className="mt-4 inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+          <div className="mt-4 inline-flex items-center gap-2 bg-white/5 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-sm">
             <Users className="w-4 h-4 text-primary" />
-            <span className="text-xs font-black text-slate-600 uppercase tracking-widest">
+            <span className="text-xs font-black text-slate-300 uppercase tracking-widest">
               {userCount} Hustlers Registered
             </span>
           </div>
@@ -78,13 +81,13 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
         <motion.div
           layout
-          className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl p-8 md:p-10"
+          className="glass rounded-[2.5rem] p-8 md:p-10"
         >
-          <div className="flex bg-slate-50 p-1 rounded-2xl mb-8 border border-slate-100">
+          <div className="flex bg-white/5 p-1 rounded-2xl mb-8 border border-white/10">
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
-                isLogin ? 'bg-white text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'
+                isLogin ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-slate-300'
               }`}
             >
               Login
@@ -92,7 +95,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             <button
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
-                !isLogin ? 'bg-white text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'
+                !isLogin ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-slate-300'
               }`}
             >
               Register
@@ -101,31 +104,31 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Full Name</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Full Name</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Hustler Name"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold text-white placeholder:text-slate-600"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">School Name / ID</label>
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">School Name / ID</label>
               <div className="relative">
-                <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
                   type="text"
                   required
                   value={schoolId}
                   onChange={(e) => setSchoolId(e.target.value)}
                   placeholder="e.g. XYZ School"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold text-white placeholder:text-slate-600"
                 />
               </div>
             </div>
@@ -139,28 +142,28 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   className="space-y-6 overflow-hidden"
                 >
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Role</label>
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Role</label>
                     <select
                       value={role}
                       onChange={(e) => setRole(e.target.value as UserRole)}
-                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold appearance-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold appearance-none text-white"
                     >
-                      <option value="student">Student</option>
-                      <option value="teacher">Teacher</option>
-                      <option value="admin">Admin</option>
+                      <option value="student" className="bg-slate-900">Student</option>
+                      <option value="teacher" className="bg-slate-900">Teacher</option>
+                      <option value="admin" className="bg-slate-900">Admin</option>
                     </select>
                   </div>
 
                   {role === 'student' && (
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Class Level</label>
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Class Level</label>
                       <select
                         value={classLevel}
                         onChange={(e) => setClassLevel(parseInt(e.target.value))}
-                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold appearance-none"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold appearance-none text-white"
                       >
                         {[1, 2, 3, 4, 5].map(lvl => (
-                          <option key={lvl} value={lvl}>Class {lvl}</option>
+                          <option key={lvl} value={lvl} className="bg-slate-900">Class {lvl}</option>
                         ))}
                       </select>
                     </div>
@@ -173,7 +176,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               <motion.p
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`text-center text-xs font-bold ${error.includes('successful') ? 'text-emerald-500' : 'text-red-500'}`}
+                className={`text-center text-xs font-bold ${error.includes('successful') ? 'text-emerald-400' : 'text-red-400'}`}
               >
                 {error}
               </motion.p>
@@ -182,10 +185,10 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full bg-primary text-slate-900 py-4 rounded-2xl font-black uppercase tracking-widest shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin" />
               ) : (
                 <>
                   {isLogin ? 'Login' : 'Create Account'}
@@ -196,7 +199,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           </form>
         </motion.div>
 
-        <p className="text-center mt-8 text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+        <p className="text-center mt-8 text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">
           Secure STEM Learning Environment
         </p>
       </div>
