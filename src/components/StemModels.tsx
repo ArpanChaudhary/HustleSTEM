@@ -5,14 +5,32 @@ import { Beaker, Sparkles, Info, Play, Pause, RotateCcw } from 'lucide-react';
 
 interface StemModelsProps {
   classLevel: number;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
-export const StemModels: React.FC<StemModelsProps> = ({ classLevel }) => {
+export const StemModels: React.FC<StemModelsProps> = ({ classLevel, onBuddyMessage }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [selectedModel, setSelectedModel] = useState<'solar' | 'heart' | 'plant'>(
     classLevel >= 5 ? 'solar' : classLevel >= 3 ? 'heart' : 'plant'
   );
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage(`Welcome to the STEM Lab! Let's explore the ${selectedModel} model together.`, 'happy');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      const messages = {
+        solar: "The Solar System is vast! Did you know gravity keeps all these planets in orbit?",
+        heart: "Your heart is a powerful pump! It never stops working to keep you healthy.",
+        plant: "Watch the plant grow! It uses sunlight and water to make its own food."
+      };
+      onBuddyMessage(messages[selectedModel], 'thinking');
+    }
+  }, [selectedModel]);
 
   useEffect(() => {
     if (!svgRef.current) return;

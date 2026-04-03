@@ -1,29 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #22d3ee;
-  --color-accent: #a855f7;
-  --color-background: #020617;
-  --color-surface: rgba(15, 23, 42, 0.8);
-  --color-text-main: #f8fafc;
-  --color-text-muted: #94a3b8;
+  --color-primary: #714B67; /* Odoo Purple */
+  --color-accent: #00A09D;  /* Odoo Teal */
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-danger: #dc3545;
+  --color-background: #f8f9fa;
+  --color-surface: #ffffff;
+  --color-text-main: #212529;
+  --color-text-muted: #6c757d;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", sans-serif;
+  --font-hustle: "Inter", sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-background text-text-main font-sans overflow-hidden;
-    background: radial-gradient(circle at 50% 0%, #0f172a 0%, #020617 100%);
+    @apply bg-background text-text-main font-sans antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans font-semibold tracking-tight;
   }
 }
 
-.glass {
-  @apply backdrop-blur-xl border border-white/10 shadow-2xl;
-  background: rgba(15, 23, 42, 0.6);
+@utility glass {
+  backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+@utility glass-card {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  transition: all 0.2s ease-in-out;
+}
+
+@utility glass-dark {
+  background-color: #343a40;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+@utility glass-sidebar {
+  background-color: #2c3e50; /* Darker Odoo-style sidebar */
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  color: #ffffff;
+}
+
+@utility glass-header {
+  background: #ffffff;
+  border-bottom: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .neon-glow {
   box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+}
+
+.success-glow {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+  @apply border-success/50;
 }
 
 @keyframes float {
@@ -44,4 +87,25 @@
 .glow-orb {
   @apply absolute rounded-full blur-[100px] pointer-events-none;
   animation: pulse-glow 15s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  50% { transform: translateX(8px); }
+  75% { transform: translateX(-8px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes success-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.animate-success {
+  animation: success-pop 0.5s ease-out;
 }

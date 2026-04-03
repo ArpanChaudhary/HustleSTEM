@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -8,10 +8,38 @@ interface SortingGameProps {
   levelId: number;
   levelTitle: string;
   onClose: () => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { items: { id: string, name: string, category: string }[], categories: string[] }> = {
-  22: { // Living vs Non-Living
+  24: { // Weather Watch (Class 2)
+    items: [
+      { id: '1', name: '☀️ Sun', category: 'Hot' },
+      { id: '2', name: '❄️ Snow', category: 'Cold' },
+      { id: '3', name: '🔥 Fire', category: 'Hot' },
+      { id: '4', name: '🧊 Ice', category: 'Cold' },
+    ],
+    categories: ['Hot', 'Cold']
+  },
+  25: { // Shape Sorter (Class 2)
+    items: [
+      { id: '1', name: '⭕ Circle', category: 'Round' },
+      { id: '2', name: '⬛ Square', category: 'Straight' },
+      { id: '3', name: '🪙 Coin', category: 'Round' },
+      { id: '4', name: '🧱 Brick', category: 'Straight' },
+    ],
+    categories: ['Round', 'Straight']
+  },
+  44: { // Ecosystem Balance (Class 4)
+    items: [
+      { id: '1', name: '🌿 Grass', category: 'Producer' },
+      { id: '2', name: '🐰 Rabbit', category: 'Consumer' },
+      { id: '3', name: '🌻 Flower', category: 'Producer' },
+      { id: '4', name: '🦊 Fox', category: 'Consumer' },
+    ],
+    categories: ['Producer', 'Consumer']
+  },
+  22: { // Living vs Non-Living (Old ID, keeping as fallback)
     items: [
       { id: '1', name: '🐶 Dog', category: 'Living' },
       { id: '2', name: '🪨 Rock', category: 'Non-Living' },
@@ -19,24 +47,22 @@ const GAME_DATA: Record<number, { items: { id: string, name: string, category: s
       { id: '4', name: '🚗 Car', category: 'Non-Living' },
     ],
     categories: ['Living', 'Non-Living']
-  },
-  33: { // Magnetic vs Non-Magnetic
-    items: [
-      { id: '1', name: '📎 Clip', category: 'Magnetic' },
-      { id: '2', name: '✏️ Pencil', category: 'Non-Magnetic' },
-      { id: '3', name: '🔑 Key', category: 'Magnetic' },
-      { id: '4', name: '🍎 Apple', category: 'Non-Magnetic' },
-    ],
-    categories: ['Magnetic', 'Non-Magnetic']
   }
 };
 
-export const SortingGame: React.FC<SortingGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const SortingGame: React.FC<SortingGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[22];
   const [items, setItems] = useState(data.items);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Let's organize these items! Pick the correct category for each one.", 'neutral');
+    }
+  }, []);
 
   const handleSort = (category: string) => {
     if (gameState === 'won') return;
@@ -46,17 +72,31 @@ export const SortingGame: React.FC<SortingGameProps> = ({ levelId, levelTitle, o
     setMoves(prev => [...prev, { item: currentItem.name, category, correct: isCorrect }]);
 
     if (isCorrect) {
+      setWrongAttempts(0);
       hustleService.addPoints(25); // Points for correct sort
+      if (onBuddyMessage) {
+        onBuddyMessage("Great sorting!", 'happy');
+      }
       if (currentIndex < items.length - 1) {
         setCurrentIndex(prev => prev + 1);
       } else {
         setGameState('won');
+        if (onBuddyMessage) {
+          onBuddyMessage("SORTING COMPLETE! Everything is in its right place!", 'celebrating');
+        }
         confetti({ particleCount: 150, spread: 70 });
         hustleService.completeLevel(levelId, 1, moves);
         hustleService.addXp(150);
       }
     } else {
-      // Shake effect
+      setWrongAttempts(prev => prev + 1);
+      if (onBuddyMessage) {
+        if (wrongAttempts >= 2) {
+          onBuddyMessage(`Think about the properties of the item. Does it breathe? Is it made of metal?`, 'encouraging');
+        } else {
+          onBuddyMessage("Not quite! Try the other category.", 'thinking');
+        }
+      }
     }
   };
 

@@ -30,10 +30,11 @@ const END_POS: Position = { x: 4, y: 0 };   // Top right
 interface LogicMazeProps {
   levelId: number;
   levelTitle: string;
-  onClose: () => void;
+  onClose: (reward?: any, performance?: { accuracy: number, time: number }) => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
-export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClose }) => {
+export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const [botPos, setBotPos] = useState<Position>(START_POS);
   const [commands, setCommands] = useState<Direction[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -41,6 +42,14 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
   const [gameState, setGameState] = useState<'playing' | 'won' | 'lost'>('playing');
   const [message, setMessage] = useState<string>('Plan your hustle path!');
   const [attempts, setAttempts] = useState(1);
+  const [startTime] = useState(Date.now());
+  const [hint, setHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("I'm here to help! Drag the arrows to plan your robot's path to the trophy.", 'neutral');
+    }
+  }, []);
 
   const resetGame = useCallback(() => {
     setBotPos(START_POS);
@@ -50,7 +59,16 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
     setGameState('playing');
     setMessage('Plan your hustle path!');
     setAttempts(prev => prev + 1);
-  }, []);
+    setHint(null);
+    
+    if (onBuddyMessage) {
+      if (attempts > 3) {
+        onBuddyMessage("Don't give up! Look at the grid and count the steps carefully.", 'encouraging');
+      } else {
+        onBuddyMessage("Let's try a different strategy!", 'thinking');
+      }
+    }
+  }, [attempts, onBuddyMessage]);
 
   const addCommand = (dir: Direction) => {
     if (isExecuting || gameState !== 'playing') return;
@@ -80,6 +98,7 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
     setIsExecuting(true);
     setBotPos(START_POS);
     setCurrentStep(-1);
+    setHint(null);
     
     let currentPos = { ...START_POS };
 
@@ -101,7 +120,11 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
       if (nextPos.x < 0 || nextPos.x >= GRID_SIZE || nextPos.y < 0 || nextPos.y >= GRID_SIZE) {
         setGameState('lost');
         setMessage('Try Again, Hustler!');
+        setHint("Oops! You hit the wall. Try to stay inside the grid!");
         setIsExecuting(false);
+        if (onBuddyMessage) {
+          onBuddyMessage("Oops! We hit the jungle wall. Let's try again!", 'encouraging');
+        }
         return;
       }
 
@@ -113,6 +136,9 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
       if (currentPos.x === END_POS.x && currentPos.y === END_POS.y) {
         setGameState('won');
         setMessage('Badhiya Kaam!');
+        if (onBuddyMessage) {
+          onBuddyMessage("INCREDIBLE! You navigated the jungle perfectly! HustleBot is impressed!", 'celebrating');
+        }
         confetti({
           particleCount: 150,
           spread: 70,
@@ -123,9 +149,12 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
         setIsExecuting(false);
         
         // Save progress
-        hustleService.completeLevel(levelId, attempts, commands);
+        const reward = hustleService.completeLevel(levelId, attempts, commands);
         hustleService.addXp(100);
         
+        const accuracy = Math.max(10, 100 - (attempts - 1) * 20);
+        const time = Math.floor((Date.now() - startTime) / 1000);
+        setTimeout(() => onClose(reward, { accuracy, time }), 2000);
         return;
       }
     }
@@ -134,6 +163,10 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
     if (currentPos.x !== END_POS.x || currentPos.y !== END_POS.y) {
       setGameState('lost');
       setMessage('Not quite there! Try again.');
+      setHint("You stopped short! Try adding more commands to reach the trophy.");
+      if (onBuddyMessage) {
+        onBuddyMessage("We stopped short! We need a few more commands to reach the trophy.", 'thinking');
+      }
     }
     setIsExecuting(false);
   };
@@ -143,27 +176,27 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-surface w-full max-w-4xl rounded-[2rem] border border-primary/10 overflow-hidden shadow-[0_0_50px_rgba(14,165,233,0.1)] flex flex-col md:flex-row h-[90vh] md:h-auto"
+        className="glass-card w-full max-w-5xl overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto !p-0"
       >
         {/* Header / Close */}
         <button 
-          onClick={onClose}
-          className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors z-10"
+          onClick={() => onClose()}
+          className="absolute top-8 right-8 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors z-10 text-primary"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* Game Area */}
-        <div className="flex-1 p-8 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-primary/5">
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-black italic text-primary tracking-tighter">{(levelTitle || '').toUpperCase()}</h2>
-            <p className={`font-bold mt-1 transition-colors ${gameState === 'won' ? 'text-primary' : gameState === 'lost' ? 'text-red-500' : 'text-gray-500'}`}>
+        <div className="flex-1 p-10 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/5">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-black italic text-primary tracking-tighter drop-shadow-[0_0_10px_rgba(34,211,238,0.3)]">{(levelTitle || '').toUpperCase()}</h2>
+            <p className={`font-black mt-2 uppercase tracking-widest text-xs transition-colors ${gameState === 'won' ? 'text-success' : gameState === 'lost' ? 'text-danger' : 'text-slate-500'}`}>
               {message}
             </p>
           </div>
 
           {/* 5x5 Grid */}
-          <div className="grid grid-cols-5 gap-2 bg-primary/5 p-3 rounded-2xl border border-primary/10">
+          <div className="grid grid-cols-5 gap-3 bg-white/5 p-4 rounded-[2rem] border border-white/10 relative">
             {Array.from({ length: GRID_SIZE * GRID_SIZE }).map((_, i) => {
               const x = i % GRID_SIZE;
               const y = Math.floor(i / GRID_SIZE);
@@ -174,47 +207,58 @@ export const LogicMaze: React.FC<LogicMazeProps> = ({ levelId, levelTitle, onClo
               return (
                 <div 
                   key={i}
-                  className={`w-12 h-12 md:w-16 md:h-16 rounded-xl flex items-center justify-center relative transition-all duration-300 ${
-                    isBot ? 'bg-primary/10 border-2 border-primary shadow-[0_0_15px_rgba(14,165,233,0.3)]' : 
-                    isEnd ? 'bg-yellow-500/10 border-2 border-yellow-500/50' :
-                    'bg-white border border-primary/5'
+                  className={`w-14 h-14 md:w-20 md:h-20 rounded-2xl flex items-center justify-center relative transition-all duration-500 ${
+                    isBot ? (gameState === 'lost' ? 'bg-danger/20 border-2 border-danger animate-shake' : gameState === 'won' ? 'bg-success/20 border-2 border-success success-glow animate-success' : 'bg-primary/20 border-2 border-primary shadow-[0_0_20px_rgba(34,211,238,0.4)]') : 
+                    isEnd ? 'bg-amber-400/10 border-2 border-amber-400/30' :
+                    'bg-white/5 border border-white/5'
                   }`}
                 >
                   {isBot && (
                     <motion.div 
                       layoutId="bot"
-                      animate={gameState === 'lost' ? { x: [0, -5, 5, -5, 5, 0] } : {}}
-                      transition={{ duration: 0.4 }}
-                      className="text-primary"
+                      className={gameState === 'lost' ? 'text-danger' : gameState === 'won' ? 'text-success' : 'text-primary'}
                     >
-                      <Bot className="w-8 h-8 md:w-10 md:h-10" />
+                      <Bot className="w-10 h-10 md:w-12 md:h-12 drop-shadow-[0_0_8px_currentColor]" />
                     </motion.div>
                   )}
                   {isEnd && !isBot && (
-                    <Trophy className="w-8 h-8 md:w-10 md:h-10 text-yellow-500 opacity-50" />
+                    <Trophy className="w-10 h-10 md:w-12 md:h-12 text-amber-400 opacity-40 animate-pulse" />
                   )}
                   {isStart && !isBot && (
-                    <div className="w-2 h-2 rounded-full bg-primary/30" />
+                    <div className="w-3 h-3 rounded-full bg-primary/20" />
                   )}
                 </div>
               );
             })}
           </div>
 
-          <div className="mt-8 flex gap-4">
+          <AnimatePresence>
+            {hint && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-6 p-4 bg-amber-400/10 border border-amber-400/20 rounded-2xl text-amber-400 text-xs font-bold text-center italic"
+              >
+                💡 {hint}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="mt-10 flex gap-6">
             <button
               onClick={runSequence}
               disabled={isExecuting || commands.length === 0}
-              className="flex items-center gap-2 px-8 py-3 bg-primary text-white font-black rounded-2xl shadow-[0_0_20px_rgba(14,165,233,0.4)] disabled:opacity-50 disabled:shadow-none transition-all hover:scale-105 active:scale-95"
+              className="flex items-center gap-3 px-10 py-4 bg-primary text-slate-900 font-black rounded-2xl shadow-[0_0_30px_rgba(34,211,238,0.4)] disabled:opacity-50 disabled:shadow-none transition-all hover:scale-105 active:scale-95 uppercase tracking-widest"
             >
-              <Play className="w-5 h-5 fill-current" />
-              RUN HUSTLE
+              <Play className="w-6 h-6 fill-current" />
+              RUN MISSION
             </button>
             <button
               onClick={resetGame}
-              className="p-3 bg-primary/5 hover:bg-primary/10 rounded-2xl border border-primary/10 transition-all text-primary"
+              className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all text-primary group"
             >
-              <RotateCcw className="w-6 h-6" />
+              <RotateCcw className="w-6 h-6 group-hover:rotate-180 transition-transform duration-500" />
             </button>
           </div>
         </div>

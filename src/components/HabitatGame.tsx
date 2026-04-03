@@ -8,10 +8,11 @@ interface HabitatGameProps {
   levelId: number;
   levelTitle: string;
   onClose: () => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { animals: { id: string, name: string, habitat: string }[], habitats: string[] }> = {
-  32: { // Animal Habitat
+  32: { // Animal Habitat (Class 3)
     animals: [
       { id: '1', name: '🦁 Lion', habitat: 'Savanna' },
       { id: '2', name: '🐧 Penguin', habitat: 'Arctic' },
@@ -22,11 +23,18 @@ const GAME_DATA: Record<number, { animals: { id: string, name: string, habitat: 
   }
 };
 
-export const HabitatGame: React.FC<HabitatGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const HabitatGame: React.FC<HabitatGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[32];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Help these animals find their way home! Where does each one live?", 'neutral');
+    }
+  }, []);
 
   const handleHabitatClick = (habitat: string) => {
     if (gameState === 'won') return;
@@ -36,17 +44,31 @@ export const HabitatGame: React.FC<HabitatGameProps> = ({ levelId, levelTitle, o
     setMoves(prev => [...prev, { animal: currentAnimal.name, habitat, correct: isCorrect }]);
 
     if (isCorrect) {
+      setWrongAttempts(0);
       hustleService.addPoints(25); // Points for correct habitat
+      if (onBuddyMessage) {
+        onBuddyMessage("That's exactly where they belong!", 'happy');
+      }
       if (currentIndex < data.animals.length - 1) {
         setCurrentIndex(prev => prev + 1);
       } else {
         setGameState('won');
+        if (onBuddyMessage) {
+          onBuddyMessage("HABITAT HERO! You've safely returned all animals to their homes!", 'celebrating');
+        }
         confetti({ particleCount: 150, spread: 70 });
         hustleService.completeLevel(levelId, 1, moves);
         hustleService.addXp(150);
       }
     } else {
-      // Shake effect
+      setWrongAttempts(prev => prev + 1);
+      if (onBuddyMessage) {
+        if (wrongAttempts >= 2) {
+          onBuddyMessage(`Think about the animal's features. Does it have thick fur for the cold?`, 'encouraging');
+        } else {
+          onBuddyMessage("Not quite! That's not their natural habitat.", 'thinking');
+        }
+      }
     }
   };
 

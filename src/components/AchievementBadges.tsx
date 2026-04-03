@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Award, Star, Zap, Shield, Rocket, Brain, Code, Microscope, FlaskConical, Binary, CircuitBoard, Globe, TreePine, Tag, RefreshCw, Layers, LayoutGrid, Type, ListOrdered, Filter } from 'lucide-react';
+import { Award, Star, Zap, Shield, Rocket, Brain, Code, Microscope, FlaskConical, Binary, CircuitBoard, Globe, TreePine, Tag, RefreshCw, Layers, LayoutGrid, Type, ListOrdered, Filter, Share2 } from 'lucide-react';
 import { StudentProfile } from '../services/hustleService';
 
 interface AchievementBadgesProps {
   profile: StudentProfile;
+  onShare?: (id: string) => void;
 }
 
 const BADGES = [
@@ -18,7 +19,7 @@ const BADGES = [
   { id: 'point_master', title: 'Point Master', description: 'Earned over 5,000 points.', icon: Award, color: 'bg-indigo-400', border: 'border-indigo-200' },
 ];
 
-export const AchievementBadges: React.FC<AchievementBadgesProps> = ({ profile }) => {
+export const AchievementBadges: React.FC<AchievementBadgesProps> = ({ profile, onShare }) => {
   return (
     <div id="achievements" className="bg-white rounded-[3rem] p-12 shadow-[0_20px_60px_rgba(0,0,0,0.05)] border border-slate-100 relative overflow-hidden">
       {/* Decorative Elements */}
@@ -90,6 +91,16 @@ export const AchievementBadges: React.FC<AchievementBadgesProps> = ({ profile })
                 <p className={`text-sm font-medium leading-relaxed ${isEarned ? 'text-slate-500' : 'text-slate-300'}`}>
                   {badge.description}
                 </p>
+
+                {isEarned && (
+                  <button 
+                    onClick={() => onShare?.(badge.id)}
+                    className="mt-6 flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-sky-500 hover:text-white rounded-xl transition-all text-slate-400 group/share"
+                  >
+                    <Share2 className="w-3 h-3" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Share</span>
+                  </button>
+                )}
 
                 {!isEarned && (
                   <div className="mt-6 flex items-center gap-2 px-4 py-1.5 bg-slate-200/50 rounded-full">

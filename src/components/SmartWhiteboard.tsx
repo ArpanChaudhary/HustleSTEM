@@ -89,7 +89,11 @@ const StickerImage = ({ src, x, y, id, onSelect, isSelected }: any) => {
   );
 };
 
-export const SmartWhiteboard: React.FC = () => {
+interface SmartWhiteboardProps {
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
+}
+
+export const SmartWhiteboard: React.FC<SmartWhiteboardProps> = ({ onBuddyMessage }) => {
   const [tool, setTool] = useState<'select' | 'pencil' | 'rect' | 'circle' | 'text' | 'eraser'>('pencil');
   const [color, setColor] = useState('#0EA5E9');
   const [strokeWidth, setStrokeWidth] = useState(5);
@@ -106,6 +110,24 @@ export const SmartWhiteboard: React.FC = () => {
   const stageRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isDrawing = useRef(false);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Welcome to the Smart Whiteboard! You can draw diagrams, add text, and use STEM stickers to explain your ideas.", 'happy');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (onBuddyMessage && tool === 'eraser') {
+      onBuddyMessage("Mistakes are just part of the learning process! Use the eraser to fix anything you want.", 'encouraging');
+    }
+  }, [tool]);
+
+  useEffect(() => {
+    if (onBuddyMessage && shapes.length > 0 && shapes.length % 10 === 0) {
+      onBuddyMessage("Your diagram is coming along great! Very professional.", 'happy');
+    }
+  }, [shapes.length]);
 
   useEffect(() => {
     if (!containerRef.current) return;

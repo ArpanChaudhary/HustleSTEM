@@ -8,29 +8,34 @@ interface MemoryGameProps {
   levelId: number;
   levelTitle: string;
   onClose: () => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { items: string[] }> = {
-  23: { // Animal Memory
+  23: { // Animal Memory (Class 2)
     items: ['🦁', '🦁', '🐘', '🐘', '🐒', '🐒', '🦓', '🦓']
   },
-  42: { // Tech Memory
+  42: { // Tech Memory (Class 4)
     items: ['💻', '💻', '📱', '📱', '🔋', '🔋', '🔌', '🔌']
   }
 };
 
-export const MemoryGame: React.FC<MemoryGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const MemoryGame: React.FC<MemoryGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[23];
   const [cards, setCards] = useState<{ id: number, content: string, flipped: boolean, matched: boolean }[]>([]);
   const [flippedIndices, setFlippedIndices] = useState<number[]>([]);
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
 
   useEffect(() => {
     const shuffled = [...data.items]
       .sort(() => Math.random() - 0.5)
       .map((content, id) => ({ id, content, flipped: false, matched: false }));
     setCards(shuffled);
+    if (onBuddyMessage) {
+      onBuddyMessage("Test your memory! Flip two cards to find a matching pair.", 'neutral');
+    }
   }, [data.items]);
 
   const handleCardClick = (idx: number) => {
@@ -49,19 +54,34 @@ export const MemoryGame: React.FC<MemoryGameProps> = ({ levelId, levelTitle, onC
       setMoves(prev => [...prev, { pair: [cards[first].content, cards[second].content], match: isMatch }]);
 
       if (isMatch) {
+        setWrongAttempts(0);
         hustleService.addPoints(40); // Points for correct pair
         newCards[first].matched = true;
         newCards[second].matched = true;
         setCards(newCards);
         setFlippedIndices([]);
+        if (onBuddyMessage) {
+          onBuddyMessage("You found a match! Keep going!", 'happy');
+        }
 
         if (newCards.every(c => c.matched)) {
           setGameState('won');
+          if (onBuddyMessage) {
+            onBuddyMessage("MEMORY MASTER! Your brain is like a supercomputer!", 'celebrating');
+          }
           confetti({ particleCount: 150, spread: 70 });
           hustleService.completeLevel(levelId, 1, moves);
           hustleService.addXp(150);
         }
       } else {
+        setWrongAttempts(prev => prev + 1);
+        if (onBuddyMessage) {
+          if (wrongAttempts >= 3) {
+            onBuddyMessage(`Try to remember where you saw each emoji!`, 'encouraging');
+          } else {
+            onBuddyMessage("Not a match this time. Try again!", 'thinking');
+          }
+        }
         setTimeout(() => {
           newCards[first].flipped = false;
           newCards[second].flipped = false;

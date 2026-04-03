@@ -8,10 +8,11 @@ interface GravityGameProps {
   levelId: number;
   levelTitle: string;
   onClose: () => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { planets: { name: string, gravity: number }[] }> = {
-  52: { // Gravity Sort
+  52: { // Gravity Sort (Class 5)
     planets: [
       { name: 'Moon', gravity: 1.6 },
       { name: 'Mars', gravity: 3.7 },
@@ -21,11 +22,18 @@ const GAME_DATA: Record<number, { planets: { name: string, gravity: number }[] }
   }
 };
 
-export const GravityGame: React.FC<GravityGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const GravityGame: React.FC<GravityGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[52];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Gravity is different everywhere! Can you find the planet that matches the gravity reading?", 'neutral');
+    }
+  }, []);
 
   const handleJump = (planetName: string) => {
     if (gameState === 'won') return;
@@ -35,17 +43,31 @@ export const GravityGame: React.FC<GravityGameProps> = ({ levelId, levelTitle, o
     setMoves(prev => [...prev, { planet: planetName, correct: isCorrect }]);
 
     if (isCorrect) {
+      setWrongAttempts(0);
       hustleService.addPoints(30); // Points for correct jump
+      if (onBuddyMessage) {
+        onBuddyMessage("Perfect landing! You've mastered this planet's gravity.", 'happy');
+      }
       if (currentIndex < data.planets.length - 1) {
         setCurrentIndex(prev => prev + 1);
       } else {
         setGameState('won');
+        if (onBuddyMessage) {
+          onBuddyMessage("SPACE EXPLORER! You've successfully navigated all gravity zones!", 'celebrating');
+        }
         confetti({ particleCount: 150, spread: 70 });
         hustleService.completeLevel(levelId, 1, moves);
         hustleService.addXp(150);
       }
     } else {
-      // Shake effect
+      setWrongAttempts(prev => prev + 1);
+      if (onBuddyMessage) {
+        if (wrongAttempts >= 2) {
+          onBuddyMessage(`Hint: Smaller planets usually have lower gravity. Jupiter is the biggest!`, 'encouraging');
+        } else {
+          onBuddyMessage("Whoa! That gravity doesn't match our readings. Try another planet!", 'thinking');
+        }
+      }
     }
   };
 

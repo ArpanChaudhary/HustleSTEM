@@ -44,7 +44,11 @@ const STICKER_DATA: Record<string, { icon: string; color: string }> = {
   'Gear': { icon: '⚙️', color: 'text-slate-400' },
 };
 
-export const StickerBook: React.FC = () => {
+interface StickerBookProps {
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
+}
+
+export const StickerBook: React.FC<StickerBookProps> = ({ onBuddyMessage }) => {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [stickers, setStickers] = useState<StudentProfile['stickers']>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -62,6 +66,18 @@ export const StickerBook: React.FC = () => {
     loadProfile();
   }, []);
 
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("This is your STEM trophy room! Use the stickers you've earned to create a masterpiece.", 'happy');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (onBuddyMessage && stickers.length > 0 && stickers.length % 5 === 0) {
+      onBuddyMessage("Your sticker book is looking amazing! I love how you're arranging them.", 'celebrating');
+    }
+  }, [stickers.length]);
+
   if (!profile) return null;
 
   const addSticker = (stickerId: string) => {
@@ -75,6 +91,9 @@ export const StickerBook: React.FC = () => {
     const updated = [...stickers, newSticker];
     setStickers(updated);
     hustleService.updateStickers(updated);
+    if (onBuddyMessage) {
+      onBuddyMessage(`Added a ${stickerId} sticker! You can drag it around and resize it.`, 'happy');
+    }
   };
 
   const updateSticker = (index: number, updates: Partial<typeof stickers[0]>) => {

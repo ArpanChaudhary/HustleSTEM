@@ -8,18 +8,26 @@ interface BinaryGameProps {
   levelId: number;
   levelTitle: string;
   onClose: () => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { target: string, hint: string }> = {
   42: { target: '1010', hint: 'Decimal 10' },
-  43: { target: '1100', hint: 'Decimal 12' }
+  43: { target: '1100', hint: 'Decimal 12' },
+  44: { target: '1111', hint: 'Decimal 15' }
 };
 
-export const BinaryGame: React.FC<BinaryGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const BinaryGame: React.FC<BinaryGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[42];
   const [currentBits, setCurrentBits] = useState<string[]>(new Array(data.target.length).fill('0'));
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage(`Binary is the language of computers! Flip the bits to match the target: ${data.target}`, 'neutral');
+    }
+  }, [data.target]);
 
   const toggleBit = (idx: number) => {
     if (gameState === 'won') return;
@@ -32,10 +40,17 @@ export const BinaryGame: React.FC<BinaryGameProps> = ({ levelId, levelTitle, onC
 
     if (newBits.join('') === data.target) {
       setGameState('won');
+      if (onBuddyMessage) {
+        onBuddyMessage("BINARY MASTER! You're speaking the computer's language now!", 'celebrating');
+      }
       hustleService.addPoints(100); // Points for correct binary target
       confetti({ particleCount: 150, spread: 70 });
       hustleService.completeLevel(levelId, 1, moves);
       hustleService.addXp(150);
+    } else {
+      if (onBuddyMessage) {
+        onBuddyMessage("Bit flipped! Keep going until you match the target.", 'happy');
+      }
     }
   };
 

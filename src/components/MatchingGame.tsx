@@ -7,7 +7,8 @@ import { hustleService } from '../services/hustleService';
 interface MatchingGameProps {
   levelId: number;
   levelTitle: string;
-  onClose: () => void;
+  onClose: (reward?: any) => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 interface MatchItem {
@@ -18,29 +19,36 @@ interface MatchItem {
 }
 
 const GAME_DATA: Record<number, { sources: string[], targets: string[], pairs: Record<string, string> }> = {
-  13: { // Animal Match
+  13: { // Animal Match (Class 1)
     sources: ['🦁', '🐘', '🐒'],
     targets: ['Roar', 'Trunk', 'Banana'],
     pairs: { '🦁': 'Roar', '🐘': 'Trunk', '🐒': 'Banana' }
   },
-  31: { // Anatomy
+  31: { // Anatomy (Class 3)
     sources: ['🧠', '🫀', '🫁'],
     targets: ['Think', 'Pump', 'Breathe'],
     pairs: { '🧠': 'Think', '🫀': 'Pump', '🫁': 'Breathe' }
   },
-  51: { // Planet Sort (Distance from Sun)
+  51: { // Planet Sort (Class 5)
     sources: ['Mercury', 'Venus', 'Earth', 'Mars'],
     targets: ['1st', '2nd', '3rd', '4th'],
     pairs: { 'Mercury': '1st', 'Venus': '2nd', 'Earth': '3rd', 'Mars': '4th' }
   }
 };
 
-export const MatchingGame: React.FC<MatchingGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const MatchingGame: React.FC<MatchingGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[13];
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const [matches, setMatches] = useState<Record<string, string>>({});
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Let's connect these related items! Select an emoji, then find its match.", 'neutral');
+    }
+  }, []);
 
   const handleSourceClick = (src: string) => {
     if (gameState === 'won') return;
@@ -54,19 +62,35 @@ export const MatchingGame: React.FC<MatchingGameProps> = ({ levelId, levelTitle,
     setMoves(prev => [...prev, { source: selectedSource, target, correct: isCorrect }]);
 
     if (isCorrect) {
+      setWrongAttempts(0);
       hustleService.addPoints(30); // Points for correct match
       const newMatches = { ...matches, [selectedSource]: target };
       setMatches(newMatches);
       setSelectedSource(null);
 
+      if (onBuddyMessage) {
+        onBuddyMessage("A perfect match!", 'happy');
+      }
+
       if (Object.keys(newMatches).length === data.sources.length) {
         setGameState('won');
+        if (onBuddyMessage) {
+          onBuddyMessage("MATCH MASTER! You've successfully paired everything!", 'celebrating');
+        }
         confetti({ particleCount: 150, spread: 70 });
-        hustleService.completeLevel(levelId, 1, moves);
+        const reward = hustleService.completeLevel(levelId, 1, moves);
         hustleService.addXp(150);
+        setTimeout(() => onClose(reward), 2000);
       }
     } else {
-      // Shake effect or something
+      setWrongAttempts(prev => prev + 1);
+      if (onBuddyMessage) {
+        if (wrongAttempts >= 2) {
+          onBuddyMessage(`Think about how these items are related. For example, what does an elephant have?`, 'encouraging');
+        } else {
+          onBuddyMessage("That doesn't seem right. Try another pair!", 'thinking');
+        }
+      }
       setSelectedSource(null);
     }
   };

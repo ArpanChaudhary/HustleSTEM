@@ -8,20 +8,32 @@ interface LifeCycleGameProps {
   levelId: number;
   levelTitle: string;
   onClose: () => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { stages: string[], target: string[] }> = {
-  22: { // Butterfly Life Cycle
+  14: { // Plant Growth (Class 1)
+    stages: ['🌻 Flower', '🌱 Sprout', '🌿 Plant', '🥚 Seed'],
+    target: ['🥚 Seed', '🌱 Sprout', '🌿 Plant', '🌻 Flower']
+  },
+  22: { // Butterfly Life Cycle (Class 2)
     stages: ['🦋 Adult', '🐛 Larva', '🥚 Egg', '🕸️ Pupa'],
     target: ['🥚 Egg', '🐛 Larva', '🕸️ Pupa', '🦋 Adult']
   }
 };
 
-export const LifeCycleGame: React.FC<LifeCycleGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const LifeCycleGame: React.FC<LifeCycleGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[22];
   const [currentOrder, setCurrentOrder] = useState<string[]>([]);
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Everything in nature has a cycle! Can you put these stages in the right order?", 'neutral');
+    }
+  }, []);
 
   const handleStageClick = (stage: string) => {
     if (gameState === 'won' || currentOrder.includes(stage)) return;
@@ -33,14 +45,29 @@ export const LifeCycleGame: React.FC<LifeCycleGameProps> = ({ levelId, levelTitl
     setMoves(prev => [...prev, { stage, correct: isCorrect }]);
 
     if (isCorrect) {
+      setWrongAttempts(0);
       hustleService.addPoints(35); // Points for correct stage
+      if (onBuddyMessage) {
+        onBuddyMessage("That's the next step in the cycle!", 'happy');
+      }
       if (newOrder.length === data.target.length) {
         setGameState('won');
+        if (onBuddyMessage) {
+          onBuddyMessage("LIFE CYCLE MASTER! You've perfectly mapped out the journey from egg to adult!", 'celebrating');
+        }
         confetti({ particleCount: 150, spread: 70 });
         hustleService.completeLevel(levelId, 1, moves);
         hustleService.addXp(150);
       }
     } else {
+      setWrongAttempts(prev => prev + 1);
+      if (onBuddyMessage) {
+        if (wrongAttempts >= 1) {
+          onBuddyMessage(`Hint: It all starts with an egg! What happens after it hatches?`, 'encouraging');
+        } else {
+          onBuddyMessage("Oops! That's not the right order. Let's try again from the start.", 'thinking');
+        }
+      }
       // Reset
       setTimeout(() => setCurrentOrder([]), 1000);
     }

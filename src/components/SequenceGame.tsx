@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, CheckCircle2, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -7,32 +7,40 @@ import { hustleService } from '../services/hustleService';
 interface SequenceGameProps {
   levelId: number;
   levelTitle: string;
-  onClose: () => void;
+  onClose: (reward?: any) => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { sequence: string[], options: string[], target: string[] }> = {
-  21: { // Pattern Builder
+  21: { // Pattern Builder (Class 2)
     sequence: ['🔴', '🔵', '🔴', '🔵'],
     options: ['🔴', '🔵', '🟢'],
     target: ['🔴', '🔵', '🔴', '🔵', '🔴', '🔵']
   },
-  22: { // Plant Growth
+  54: { // Code Logic (Class 5)
+    sequence: ['START', 'MOVE', 'MOVE'],
+    options: ['TURN', 'STOP', 'JUMP'],
+    target: ['START', 'MOVE', 'MOVE', 'TURN', 'MOVE', 'STOP']
+  },
+  14: { // Plant Growth (Class 1) - Sequence fallback
     sequence: ['🌱', '🌿'],
     options: ['🌳', '🌻', '🍂'],
     target: ['🌱', '🌿', '🌳']
-  },
-  32: { // Food Chain
-    sequence: ['☀️', '🌿', '🐰'],
-    options: ['🦊', '🦁', '🦅'],
-    target: ['☀️', '🌿', '🐰', '🦊']
   }
 };
 
-export const SequenceGame: React.FC<SequenceGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const SequenceGame: React.FC<SequenceGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[21];
   const [currentSeq, setCurrentSeq] = useState<string[]>(data.sequence);
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Look closely at the pattern! What comes next in the sequence?", 'neutral');
+    }
+  }, []);
 
   const handleOptionClick = (opt: string) => {
     if (gameState === 'won') return;
@@ -42,22 +50,38 @@ export const SequenceGame: React.FC<SequenceGameProps> = ({ levelId, levelTitle,
     setMoves(prev => [...prev, { option: opt, correct: isCorrect }]);
 
     if (isCorrect) {
+      setWrongAttempts(0);
       hustleService.addPoints(20); // Points for correct sequence item
       setCurrentSeq(nextSeq);
+      if (onBuddyMessage) {
+        onBuddyMessage("That fits perfectly!", 'happy');
+      }
       if (nextSeq.length === data.target.length) {
         setGameState('won');
+        if (onBuddyMessage) {
+          onBuddyMessage("SEQUENCE COMPLETE! You've mastered the pattern!", 'celebrating');
+        }
         confetti({ particleCount: 150, spread: 70 });
-        hustleService.completeLevel(levelId, 1, moves);
+        const reward = hustleService.completeLevel(levelId, 1, moves);
         hustleService.addXp(150);
+        setTimeout(() => onClose(reward), 2000);
       }
     } else {
-      // Shake effect
+      setWrongAttempts(prev => prev + 1);
+      if (onBuddyMessage) {
+        if (wrongAttempts >= 2) {
+          onBuddyMessage(`Try looking at the items that came before. What's the repeating part?`, 'encouraging');
+        } else {
+          onBuddyMessage("Oops! That doesn't follow the pattern. Try again!", 'thinking');
+        }
+      }
     }
   };
 
   const reset = () => {
     setCurrentSeq(data.sequence);
     setGameState('playing');
+    setWrongAttempts(0);
   };
 
   return (

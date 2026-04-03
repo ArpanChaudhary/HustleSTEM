@@ -8,25 +8,31 @@ interface ScrambleGameProps {
   levelId: number;
   levelTitle: string;
   onClose: () => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { word: string, hint: string }> = {
   42: { word: 'BINARY', hint: 'Computer language' },
   43: { word: 'ROBOT', hint: 'Mechanical helper' },
-  53: { word: 'GALAXY', hint: 'Collection of stars' }
+  53: { word: 'GALAXY', hint: 'Collection of stars' },
+  54: { word: 'LOGIC', hint: 'Clear thinking' }
 };
 
-export const ScrambleGame: React.FC<ScrambleGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const ScrambleGame: React.FC<ScrambleGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[42];
   const [scrambled, setScrambled] = useState<string[]>([]);
   const [currentGuess, setCurrentGuess] = useState<string[]>([]);
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
 
   useEffect(() => {
     const shuffled = data.word.split('').sort(() => Math.random() - 0.5);
     setScrambled(shuffled);
     setCurrentGuess([]);
+    if (onBuddyMessage) {
+      onBuddyMessage(`Can you unscramble this word? Hint: ${data.hint}`, 'neutral');
+    }
   }, [data.word]);
 
   const handleCharClick = (char: string, idx: number) => {
@@ -44,12 +50,24 @@ export const ScrambleGame: React.FC<ScrambleGameProps> = ({ levelId, levelTitle,
       setMoves(prev => [...prev, { guess: newGuess.join(''), correct: isCorrect }]);
 
       if (isCorrect) {
+        setWrongAttempts(0);
         setGameState('won');
+        if (onBuddyMessage) {
+          onBuddyMessage("WORD MASTER! You've unscrambled the secret code!", 'celebrating');
+        }
         hustleService.addPoints(50); // Points for correct word
         confetti({ particleCount: 150, spread: 70 });
         hustleService.completeLevel(levelId, 1, moves);
         hustleService.addXp(150);
       } else {
+        setWrongAttempts(prev => prev + 1);
+        if (onBuddyMessage) {
+          if (wrongAttempts >= 2) {
+            onBuddyMessage(`Think about the hint: ${data.hint}. The word starts with ${data.word[0]}!`, 'encouraging');
+          } else {
+            onBuddyMessage("Not quite! Let's try unscrambling it again.", 'thinking');
+          }
+        }
         // Reset
         setTimeout(() => {
           setScrambled(data.word.split('').sort(() => Math.random() - 0.5));
@@ -63,6 +81,7 @@ export const ScrambleGame: React.FC<ScrambleGameProps> = ({ levelId, levelTitle,
     setScrambled(data.word.split('').sort(() => Math.random() - 0.5));
     setCurrentGuess([]);
     setGameState('playing');
+    setWrongAttempts(0);
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Settings, Cpu, Zap, Shield, Rocket, ChevronRight, ChevronLeft, Lock } from 'lucide-react';
 import { StudentProfile, hustleService } from '../services/hustleService';
@@ -6,6 +6,7 @@ import { StudentProfile, hustleService } from '../services/hustleService';
 interface HustleBotLabProps {
   profile: StudentProfile;
   onUpdate: (profile: StudentProfile) => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const PARTS = {
@@ -35,18 +36,34 @@ const PARTS = {
   ],
 };
 
-export const HustleBotLab: React.FC<HustleBotLabProps> = ({ profile, onUpdate }) => {
+export const HustleBotLab: React.FC<HustleBotLabProps> = ({ profile, onUpdate, onBuddyMessage }) => {
   const [activeTab, setActiveTab] = useState<keyof typeof PARTS>('head');
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Welcome to my home! You can use your points to upgrade my parts and make me even more powerful.", 'happy');
+    }
+  }, []);
 
   const handlePartSelect = (partId: string, cost: number) => {
     if (profile.unlockedBotParts.includes(partId)) {
       const newProfile = hustleService.setBotPart(activeTab, partId);
       onUpdate(newProfile);
+      if (onBuddyMessage) {
+        onBuddyMessage(`Looking good! This ${partId} ${activeTab} really suits me.`, 'happy');
+      }
     } else if (profile.points >= cost) {
       const result = hustleService.unlockBotPart(partId, cost);
       if (result.success) {
         const newProfile = hustleService.setBotPart(activeTab, partId);
         onUpdate(newProfile);
+        if (onBuddyMessage) {
+          onBuddyMessage(`WOW! Thank you for the upgrade! I feel like a brand new robot!`, 'celebrating');
+        }
+      }
+    } else {
+      if (onBuddyMessage) {
+        onBuddyMessage(`We need ${cost - profile.points} more points to unlock this part. Let's complete more missions!`, 'thinking');
       }
     }
   };

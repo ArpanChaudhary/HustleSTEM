@@ -7,7 +7,11 @@ type BrushType = 'normal' | 'rainbow' | 'neon' | 'dotted';
 type PaperType = 'plain' | 'grid' | 'dots' | 'isometric';
 type ToolType = 'brush' | 'circle' | 'square' | 'triangle';
 
-export const SymmetryPainter: React.FC = () => {
+interface SymmetryPainterProps {
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
+}
+
+export const SymmetryPainter: React.FC<SymmetryPainterProps> = ({ onBuddyMessage }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [color, setColor] = useState('#0EA5E9');
@@ -20,6 +24,24 @@ export const SymmetryPainter: React.FC = () => {
   const [showGrid, setShowGrid] = useState(true);
   const [history, setHistory] = useState<string[]>([]);
   const [hue, setHue] = useState(0);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Welcome to the Creative Lab! Try using different symmetry modes to create amazing patterns.", 'happy');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (onBuddyMessage && symmetryType === 'kaleidoscope') {
+      onBuddyMessage("Kaleidoscope mode! This is my favorite. Everything you draw is mirrored perfectly!", 'celebrating');
+    }
+  }, [symmetryType]);
+
+  useEffect(() => {
+    if (onBuddyMessage && brushType === 'rainbow') {
+      onBuddyMessage("Rainbow colors! This is going to look spectacular!", 'happy');
+    }
+  }, [brushType]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

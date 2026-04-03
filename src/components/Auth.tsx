@@ -18,7 +18,6 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [classLevel, setClassLevel] = useState(1);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [userCount, setUserCount] = useState(hustleService.getUserCount());
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,16 +37,21 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
       // Simulate a small delay for kid-friendly feedback
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      const profile = hustleService.login(formattedName, role, schoolId || 'default');
-      if (!isLogin) {
-        profile.classLevel = classLevel;
-        profile.role = role;
-        profile.schoolId = schoolId || 'default';
-        hustleService.saveProfile(profile);
+      let profile;
+      if (isLogin) {
+        profile = hustleService.login(formattedName, schoolId || 'default');
+        if (!profile) {
+          setError('Hustler not found! Did you register yet?');
+          setLoading(false);
+          return;
+        }
+      } else {
+        profile = hustleService.register(formattedName, role, schoolId || 'default', classLevel);
       }
+      
       onLogin(profile);
-    } catch (err) {
-      setError('Something went wrong. Try again!');
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Try again!');
     } finally {
       setLoading(false);
     }
@@ -66,36 +70,29 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           >
             <Sparkles className="w-10 h-10" />
           </motion.div>
-          <h1 className="text-4xl font-black italic tracking-tighter text-white mb-2">
-            HUSTLE<span className="text-primary">STEM</span>
+          <h1 className="text-4xl font-sans font-bold tracking-tight text-primary mb-2">
+            HUSTLE<span className="text-accent">STEM</span>
           </h1>
-          <p className="text-slate-400 font-bold">Join the community of young innovators!</p>
-          
-          <div className="mt-4 inline-flex items-center gap-2 bg-white/5 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-sm">
-            <Users className="w-4 h-4 text-primary" />
-            <span className="text-xs font-black text-slate-300 uppercase tracking-widest">
-              {userCount} Hustlers Registered
-            </span>
-          </div>
+          <p className="text-text-muted font-medium">Join the community of young innovators!</p>
         </div>
 
         <motion.div
           layout
-          className="glass rounded-[2.5rem] p-8 md:p-10"
+          className="glass-card p-8 md:p-10"
         >
-          <div className="flex bg-white/5 p-1 rounded-2xl mb-8 border border-white/10">
+          <div className="flex bg-slate-100 p-1 rounded-lg mb-8 border border-slate-200">
             <button
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
-                isLogin ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-slate-300'
+              className={`flex-1 py-2.5 rounded-md font-semibold text-xs uppercase tracking-wider transition-all ${
+                isLogin ? 'bg-primary text-white shadow-sm' : 'text-text-muted hover:text-text-main'
               }`}
             >
               Login
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${
-                !isLogin ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-slate-300'
+              className={`flex-1 py-2.5 rounded-md font-semibold text-xs uppercase tracking-wider transition-all ${
+                !isLogin ? 'bg-primary text-white shadow-sm' : 'text-text-muted hover:text-text-main'
               }`}
             >
               Register
@@ -104,31 +101,31 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Full Name</label>
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Full Name</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Hustler Name"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold text-white placeholder:text-slate-600"
+                  className="w-full bg-white border border-slate-300 rounded-lg py-3 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium text-text-main placeholder:text-text-muted"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">School Name / ID</label>
+              <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">School Name / ID</label>
               <div className="relative">
-                <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                 <input
                   type="text"
                   required
                   value={schoolId}
                   onChange={(e) => setSchoolId(e.target.value)}
                   placeholder="e.g. XYZ School"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold text-white placeholder:text-slate-600"
+                  className="w-full bg-white border border-slate-300 rounded-lg py-3 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium text-text-main placeholder:text-text-muted"
                 />
               </div>
             </div>
@@ -142,28 +139,28 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                   className="space-y-6 overflow-hidden"
                 >
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Role</label>
+                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Role</label>
                     <select
                       value={role}
                       onChange={(e) => setRole(e.target.value as UserRole)}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold appearance-none text-white"
+                      className="w-full bg-white border border-slate-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium appearance-none text-text-main"
                     >
-                      <option value="student" className="bg-slate-900">Student</option>
-                      <option value="teacher" className="bg-slate-900">Teacher</option>
-                      <option value="admin" className="bg-slate-900">Admin</option>
+                      <option value="student">Student</option>
+                      <option value="teacher">Teacher</option>
+                      <option value="admin">Admin</option>
                     </select>
                   </div>
 
                   {role === 'student' && (
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4">Class Level</label>
+                      <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Class Level</label>
                       <select
                         value={classLevel}
                         onChange={(e) => setClassLevel(parseInt(e.target.value))}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold appearance-none text-white"
+                        className="w-full bg-white border border-slate-300 rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-medium appearance-none text-text-main"
                       >
                         {[1, 2, 3, 4, 5].map(lvl => (
-                          <option key={lvl} value={lvl} className="bg-slate-900">Class {lvl}</option>
+                          <option key={lvl} value={lvl}>Class {lvl}</option>
                         ))}
                       </select>
                     </div>
@@ -176,7 +173,7 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               <motion.p
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`text-center text-xs font-bold ${error.includes('successful') ? 'text-emerald-400' : 'text-red-400'}`}
+                className={`text-center text-xs font-semibold ${error.includes('successful') ? 'text-success' : 'text-danger'}`}
               >
                 {error}
               </motion.p>
@@ -185,10 +182,10 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-primary text-slate-900 py-4 rounded-2xl font-black uppercase tracking-widest shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+              className="w-full bg-primary text-white py-3 rounded-lg font-semibold uppercase tracking-wider shadow-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
                   {isLogin ? 'Login' : 'Create Account'}
@@ -202,6 +199,29 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         <p className="text-center mt-8 text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">
           Secure STEM Learning Environment
         </p>
+
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => {
+              const confirmed = window.localStorage.getItem('hustle_reset_confirm');
+              if (confirmed === 'true') {
+                window.localStorage.removeItem('hustle_reset_confirm');
+                hustleService.resetAllData();
+                window.location.reload();
+              } else {
+                window.localStorage.setItem('hustle_reset_confirm', 'true');
+                setError('Click RESET again to confirm wiping ALL data.');
+                setTimeout(() => {
+                  window.localStorage.removeItem('hustle_reset_confirm');
+                  setError('');
+                }, 3000);
+              }
+            }}
+            className="text-[10px] font-black text-red-500/50 hover:text-red-500 uppercase tracking-widest transition-colors"
+          >
+            Reset All Data
+          </button>
+        </div>
       </div>
     </div>
   );

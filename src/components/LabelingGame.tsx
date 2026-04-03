@@ -8,10 +8,11 @@ interface LabelingGameProps {
   levelId: number;
   levelTitle: string;
   onClose: () => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { image: string, labels: { id: string, name: string, x: number, y: number }[] }> = {
-  31: { // Anatomy
+  31: { // Anatomy (Class 3)
     image: 'https://picsum.photos/seed/anatomy/400/400?blur=2',
     labels: [
       { id: '1', name: 'Brain', x: 50, y: 20 },
@@ -20,7 +21,16 @@ const GAME_DATA: Record<number, { image: string, labels: { id: string, name: str
       { id: '4', name: 'Stomach', x: 50, y: 70 },
     ]
   },
-  51: { // Solar System
+  34: { // Robot Parts (Class 3)
+    image: 'https://picsum.photos/seed/robot/400/400?blur=2',
+    labels: [
+      { id: '1', name: 'Sensor', x: 50, y: 15 },
+      { id: '2', name: 'Battery', x: 50, y: 50 },
+      { id: '3', name: 'Motor', x: 30, y: 80 },
+      { id: '4', name: 'CPU', x: 50, y: 35 },
+    ]
+  },
+  51: { // Solar System (Class 5)
     image: 'https://picsum.photos/seed/space/400/400?blur=2',
     labels: [
       { id: '1', name: 'Sun', x: 10, y: 50 },
@@ -31,12 +41,19 @@ const GAME_DATA: Record<number, { image: string, labels: { id: string, name: str
   }
 };
 
-export const LabelingGame: React.FC<LabelingGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const LabelingGame: React.FC<LabelingGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[31];
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [matches, setMatches] = useState<Record<string, boolean>>({});
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Let's label the diagram! Select a name from the list, then click the correct point on the image.", 'neutral');
+    }
+  }, []);
 
   const handleLabelClick = (labelId: string) => {
     if (gameState === 'won') return;
@@ -50,18 +67,35 @@ export const LabelingGame: React.FC<LabelingGameProps> = ({ levelId, levelTitle,
     setMoves(prev => [...prev, { selected: selectedLabel, target: labelId, correct: isCorrect }]);
 
     if (isCorrect) {
+      setWrongAttempts(0);
       hustleService.addPoints(30); // Points for correct label
       const newMatches = { ...matches, [labelId]: true };
       setMatches(newMatches);
       setSelectedLabel(null);
 
+      if (onBuddyMessage) {
+        onBuddyMessage("That's the right spot!", 'happy');
+      }
+
       if (Object.keys(newMatches).length === data.labels.length) {
         setGameState('won');
+        if (onBuddyMessage) {
+          onBuddyMessage("LABELING COMPLETE! You've identified every part correctly!", 'celebrating');
+        }
         confetti({ particleCount: 150, spread: 70 });
         hustleService.completeLevel(levelId, 1, moves);
         hustleService.addXp(150);
       }
     } else {
+      setWrongAttempts(prev => prev + 1);
+      if (onBuddyMessage) {
+        if (wrongAttempts >= 2) {
+          const correctLabel = data.labels.find(l => l.id === selectedLabel);
+          onBuddyMessage(`Think about where the ${correctLabel?.name} is located.`, 'encouraging');
+        } else {
+          onBuddyMessage("Not quite! Try another location for that label.", 'thinking');
+        }
+      }
       setSelectedLabel(null);
     }
   };

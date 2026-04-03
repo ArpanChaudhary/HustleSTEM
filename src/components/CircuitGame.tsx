@@ -8,10 +8,11 @@ interface CircuitGameProps {
   levelId: number;
   levelTitle: string;
   onClose: () => void;
+  onBuddyMessage?: (msg: string, mood?: 'happy' | 'thinking' | 'celebrating' | 'encouraging' | 'neutral') => void;
 }
 
 const GAME_DATA: Record<number, { nodes: { id: string, x: number, y: number }[], connections: [string, string][] }> = {
-  41: { // Circuit Builder
+  41: { // Circuit Builder (Class 4)
     nodes: [
       { id: '1', x: 20, y: 20 },
       { id: '2', x: 80, y: 20 },
@@ -22,12 +23,19 @@ const GAME_DATA: Record<number, { nodes: { id: string, x: number, y: number }[],
   }
 };
 
-export const CircuitGame: React.FC<CircuitGameProps> = ({ levelId, levelTitle, onClose }) => {
+export const CircuitGame: React.FC<CircuitGameProps> = ({ levelId, levelTitle, onClose, onBuddyMessage }) => {
   const data = GAME_DATA[levelId] || GAME_DATA[41];
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [userConnections, setUserConnections] = useState<[string, string][]>([]);
   const [gameState, setGameState] = useState<'playing' | 'won'>('playing');
   const [moves, setMoves] = useState<any[]>([]);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+
+  useEffect(() => {
+    if (onBuddyMessage) {
+      onBuddyMessage("Let's complete the circuit! Click two nodes to connect them with a wire.", 'neutral');
+    }
+  }, []);
 
   const handleNodeClick = (nodeId: string) => {
     if (gameState === 'won') return;
@@ -45,6 +53,7 @@ export const CircuitGame: React.FC<CircuitGameProps> = ({ levelId, levelTitle, o
       setMoves(prev => [...prev, { connection: newConn, correct: isCorrect }]);
 
       if (isCorrect) {
+        setWrongAttempts(0);
         const exists = userConnections.some(c => 
           (c[0] === newConn[0] && c[1] === newConn[1]) || (c[0] === newConn[1] && c[1] === newConn[0])
         );
@@ -52,11 +61,26 @@ export const CircuitGame: React.FC<CircuitGameProps> = ({ levelId, levelTitle, o
           hustleService.addPoints(40); // Points for correct connection
           const newConns = [...userConnections, newConn];
           setUserConnections(newConns);
+          if (onBuddyMessage) {
+            onBuddyMessage("Zap! That's a solid connection!", 'happy');
+          }
           if (newConns.length === data.connections.length) {
             setGameState('won');
+            if (onBuddyMessage) {
+              onBuddyMessage("CIRCUIT COMPLETE! The power is flowing perfectly!", 'celebrating');
+            }
             confetti({ particleCount: 150, spread: 70 });
             hustleService.completeLevel(levelId, 1, moves);
             hustleService.addXp(150);
+          }
+        }
+      } else {
+        setWrongAttempts(prev => prev + 1);
+        if (onBuddyMessage) {
+          if (wrongAttempts >= 2) {
+            onBuddyMessage(`Try connecting the nodes in a loop to complete the circuit!`, 'encouraging');
+          } else {
+            onBuddyMessage("That connection doesn't work. Try another path!", 'thinking');
           }
         }
       }
